@@ -7,7 +7,7 @@
   border-left: 1px solid #ccc;
   padding: 0;
   float: left;
-  /* min-width: 100px; TODO(mark-i-m): hardcoded? */
+  min-width: 100px; /* TODO(mark-i-m): hardcoded? */
   /*max-width: 270px;*/
   /* Reverted incomplete change list width: */
   /* https://github.com/wekan/wekan/issues/4558 */
@@ -82,16 +82,6 @@
   text-overflow: ellipsis;
   word-wrap: break-word;
 }
-.list-rotated {
-  width: 10px;
-  margin-top: 10px;
-  margin-left: 0;
-  margin-right: 0;
-  transform: rotate(90deg);
-  position: relative;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .list-header .list-header-watch-icon {
   padding-left: 10px;
   color: #a6a6a6;
@@ -106,23 +96,6 @@
   }
 }
 .list-header .list-header-plus-top {
-  color: #a6a6a6;
-  margin-right: 15px;
-}
-.list-header .list-header-collapse-right {
-  color: #a6a6a6;
-}
-.list-header .list-header-collapse-left {
-  color: #a6a6a6;
-  margin-right: 15px;
-}
-.list-header .list-header-uncollapse-left {
-  color: #a6a6a6;
-}
-.list-header .list-header-uncollapse-right {
-  color: #a6a6a6;
-}
-.list-header .list-header-collapse {
   color: #a6a6a6;
   margin-right: 15px;
 }
@@ -148,7 +121,8 @@
   flex-direction: column;
   display: flex;
   overflow-y: auto;
-  padding: 5px 11px;
+  /* padding: 5px 11px; */
+  padding: 5px 2px;
 }
 .list-body .minicards {
   flex-grow: 1;
@@ -160,7 +134,7 @@
   margin-bottom: 9px;
 }
 .list-body .minicards .add-controls button {
-  min-height: 50px;
+  min-height: 24px;
 }
 .list-body .open-minicard-composer {
   border-radius: 2px;

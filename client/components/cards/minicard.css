@@ -92,6 +92,9 @@
 .draggable-hover-card .minicard {
   background: #f7f7f7;
 }
+.is-selected .minicard {
+  background: inherit;
+}
 .draggable-hover-card .minicard {
   background: #ededed;
 }
@@ -264,6 +267,9 @@
 .minicard .minicard-assignees:empty {
   display: none;
 }
+.minicard .dates .date {
+  margin-bottom: 6px;
+}
 .minicard .minicard-description {
   padding: 6px 0 0 8px;
   color: #000;
@@ -294,6 +300,7 @@
   min-height: 36px;
   margin-bottom: 20px;
   overflow-y: auto;
+  color: #000;
 }
 .parent-prefix {
   color: #b3b3b3;

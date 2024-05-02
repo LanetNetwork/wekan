@@ -31,17 +31,6 @@ BlazeComponent.extendComponent({
       return !status;
     }
   },
-  collapsed(check = undefined) {
-    const list = Template.currentData();
-    const status = list.isCollapsed();
-    if (check === undefined) {
-      // just check
-      return status;
-    } else {
-      list.collapse(!status);
-      return !status;
-    }
-  },
   editTitle(event) {
     event.preventDefault();
     const newTitle = this.childComponents('inlinedForm')[0]
@@ -114,10 +103,6 @@ BlazeComponent.extendComponent({
         'click .js-list-star'(event) {
           event.preventDefault();
           this.starred(!this.starred());
-        },
-        'click .js-collapse'(event) {
-          event.preventDefault();
-          this.collapsed(!this.collapsed());
         },
         'click .js-open-list-menu': Popup.open('listAction'),
         'click .js-add-card.list-header-plus-top'(event) {

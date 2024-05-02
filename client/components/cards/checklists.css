@@ -71,6 +71,7 @@ textarea.js-edit-checklist-item {
 .checklist-title .title {
   font-size: 18px;
   line-height: 25px;
+  color: #000;
 }
 .checklist-title .checklist-stat {
   margin: 0 0.5em;
@@ -113,6 +114,7 @@ textarea.js-edit-checklist-item {
   transition: height 0ms 400ms, opacity 400ms 0ms;
   height: auto;
   overflow: hidden;
+  color: #000;
 }
 .checklist-item.is-checked.invisible {
   opacity: 0;

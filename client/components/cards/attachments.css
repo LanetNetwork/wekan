@@ -1,6 +1,7 @@
 .hidden {
   display: none;
 }
+
 .attachment-upload {
   text-align: center;
   font-weight: bold;
@@ -16,7 +17,7 @@
   margin-top: 16px;
 }
 .attachment-item:hover {
-  background: #e0e0e0;
+  background: var(--ds-background-neutral);
 }
 .attachment-thumbnail-container {
   display: block;

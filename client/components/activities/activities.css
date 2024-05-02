@@ -2,6 +2,8 @@
   margin: 0 0.5em 0.8em;
   display: flex;
   justify-content: space-between;
+  margin-bottom: 24px;
+  margin-top: 10px;
 }
 .reactions-popup .add-comment-reaction {
   display: inline-block;
@@ -36,7 +38,7 @@
   flex: 1;
   align-self: center;
   margin: 0;
-  margin-left: 3px;
+  margin-left: 6px;
   overflow: hidden;
   word-break: break-word;
 }

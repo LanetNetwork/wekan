@@ -4,6 +4,7 @@
 .board-list .board-color-nephritis a {
   background-color: #27ae60;
 }
+
 .board-color-nephritis .is-selected .minicard {
   border-left: 3px solid #27ae60;
 }
@@ -2251,3 +2252,33 @@
   background: #2b2b2b;
   color: #fff;
 }
+
+
+
+
+
+
+.board-wrapper.board-color-natural {
+
+}
+.board-wrapper.board-color-natural .ui-sortable {
+  background: #0b1113;
+}
+.board-color-natural .minicard {
+  background: #22272b;
+  color: #e5e5e5;
+  border: 1px solid transparent;
+}
+.board-color-natural .minicard:hover:not(.minicard-composer) {
+  background: #22272b;
+  border: 1px solid rgba(125,125,255);
+}
+
+.board-color-natural .minicard-wrapper {
+  padding: 0 2px;
+}
+
+
+/* .board-color-natural  .card-details {
+  background-color: #282E33;
+} */

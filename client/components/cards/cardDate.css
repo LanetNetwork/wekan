@@ -36,11 +36,12 @@
   background-color: #c73200;
 }
 .card-date.long-overdue {
-  background-color: #fd5d47;
+  background-color: #323940;
 }
 .card-date.long-overdue:hover,
 .card-date.long-overdue.is-active {
-  background-color: #fd3e24;
+  /* background-color: #fd3e24; */
+  background-color: #223940;
 }
 .card-date.end-date time::before {
   content: "\f253";
