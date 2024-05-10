@@ -80,6 +80,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 0 2px #bfbfbf inset;
+  margin-left: 4px;
 }
 .member.add-member:hover,
 .member.add-member.is-active {

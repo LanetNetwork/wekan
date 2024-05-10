@@ -1,8 +1,9 @@
 .card-date {
   display: block;
   border-radius: 4px;
-  padding: 1px 3px;
+  padding: 2px 6px!important;
   background-color: #dbdbdb;
+  color: #fff;
 }
 .card-date:hover,
 .card-date.is-active {
@@ -30,6 +31,7 @@
 }
 .card-date.due {
   background-color: #fa3f00;
+  margin-bottom: 4px;
 }
 .card-date.due:hover,
 .card-date.due.is-active {

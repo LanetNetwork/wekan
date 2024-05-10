@@ -166,6 +166,9 @@
   font-size: 20px;
   color: #ccc;
 }
+.minicard .minicard-title {
+    margin-bottom: 6px;
+}
 .minicard .minicard-title .card-number {
   color: #b3b3b3;
   display: inline-block;
@@ -300,7 +303,7 @@
   min-height: 36px;
   margin-bottom: 20px;
   overflow-y: auto;
-  color: #000;
+  color: #fff;
 }
 .parent-prefix {
   color: #b3b3b3;

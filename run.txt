@@ -1,0 +1,5 @@
+node version ->    v14.21.4
+stop ->            docker compose down
+start ->           docker compose up -d
+run for develop -> bash rebuild-wekan.sh
+http://127.0.1.1:3002/
