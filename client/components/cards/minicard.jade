@@ -10,6 +10,18 @@ template(name="minicard")
           .fa.fa-arrows
       else
         a.fa.fa-navicon.minicard-details-menu.js-open-minicard-details-menu(title="{{_ 'cardDetailsActionsPopup-title'}}")
+
+    if labels
+      .minicard-labels(class="{{#if hiddenMinicardLabelText}}minicard-labels-no-text{{/if}}")
+        each labels
+          unless hiddenMinicardLabelText
+            span.js-card-label.card-label(class="card-label-{{color}}" title=name)
+              +viewer
+                = name
+          if hiddenMinicardLabelText
+            .minicard-label(class="card-label-{{color}}" title="{{name}}")
+
+
     .dates
       if getReceived
         unless getStart
@@ -32,15 +44,6 @@ template(name="minicard")
       if currentBoard.allowsCoverAttachmentOnMinicard
         .minicard-cover(style="background-image: url('{{cover.link 'original'}}?dummyReloadAfterSessionEstablished={{sess}}');")
 
-    if labels
-      .minicard-labels(class="{{#if hiddenMinicardLabelText}}minicard-labels-no-text{{/if}}")
-        each labels
-          unless hiddenMinicardLabelText
-            span.js-card-label.card-label(class="card-label-{{color}}" title=name)
-              +viewer
-                = name
-          if hiddenMinicardLabelText
-            .minicard-label(class="card-label-{{color}}" title="{{name}}")
 
     .minicard-title
       if $eq 'prefix-with-full-path' currentBoard.presentParentTask
