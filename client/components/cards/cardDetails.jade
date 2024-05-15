@@ -648,14 +648,14 @@ template(name="cardDetails")
             hr
             h3.card-details-item-title
               i.fa.fa-paperclip
-              | {{_ 'attachments'}}
+              | Вкладення
             if Meteor.settings.public.attachmentsUploadMaxSize
               | {{_ 'max-upload-filesize'}} {{Meteor.settings.public.attachmentsUploadMaxSize}}
               br
             if Meteor.settings.public.attachmentsUploadMimeTypes
               | {{_ 'allowed-upload-filetypes'}} {{Meteor.settings.public.attachmentsUploadMimeTypes}}
               br
-            | {{_ 'invalid-file'}}
+            //- | {{_ 'invalid-file'}}
             .card-checklist-attachmentGallery.card-attachmentGallery
               +attachmentGallery
 
@@ -664,8 +664,10 @@ template(name="cardDetails")
       unless currentUser.isNoComments
         .activity-title
           h3.card-details-item-title
-            i.fa.fa-history
-            | {{ _ 'activity'}}
+            //- i.fa.fa-history
+            img(src="/clipboard-text-clock-outline.svg", alt="")
+            p Дії
+            //- | {{ _ 'activity'}}
           if currentUser.isBoardMember
             .material-toggle-switch(title="{{_ 'hide-system-messages'}}")
               //span.toggle-switch-title

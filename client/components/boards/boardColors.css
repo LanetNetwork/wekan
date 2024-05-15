@@ -2568,10 +2568,50 @@
   padding: 4px 6px;
   margin: 8px 0;
 }
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .add-checklist {
+  display: inline-flex !important;
+  background: #A0C0D5;
+  border-radius: 4px;
+  color: #fff;
+  width: auto;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  margin: 8px 0;
+}
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .add-checklist-top .fa {
   color: #fff;
   margin-right: 4px;
 }
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .add-checklist .fa {
+  color: #fff;
+  margin-right: 4px;
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklist-attachmentGallery .attachment-item {
+  padding: 20px;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .activity-title {
+  margin-left: 0;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .activity-title .card-details-item-title {
+  justify-content: flex-start;
+  align-items: center;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .activity-title .card-details-item-title img {
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .activity-title .card-details-item-title p {
+  margin-bottom: 0;
+  margin-left: 4px;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .activities .activity .activity-desc .activity-meta {
+  color: #000;
+}
+
 .pop-over.board-color-belize {
 
 }

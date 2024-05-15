@@ -2,7 +2,7 @@ template(name="listBody")
   .list-body
     .minicards.clearfix.js-minicards(class="{{#if reachedWipLimit}}js-list-full{{/if}}")
       if cards.length
-        +inlinedForm(autoclose=false position="top")
+        +inlinedForm(autoclose=true position="top")
           +addCardForm(listId=_id position="top")
       ul.sidebar-list
         each customFieldsSum
@@ -27,7 +27,7 @@ template(name="listBody")
         +spinnerList
 
       if canSeeAddCard
-        +inlinedForm(autoclose=false position="bottom")
+        +inlinedForm(autoclose=true position="bottom")
           +addCardForm(listId=_id position="bottom")
         else
           a.open-minicard-composer.js-card-composer.js-open-inlined-form(title="{{_ 'add-card-to-bottom-of-list'}}")
