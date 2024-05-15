@@ -91,14 +91,14 @@
   will-change: flex-basis;
   overflow-y: scroll;
   overflow-x: hidden;
-  /* background: #f7f7f7; */
+  background: #f7f7f7;
   border-radius: bottom 3px;
   z-index: 30;
   animation: flexGrowIn 0.1s;
   box-shadow: 0 0 7px 0 #b3b3b3;
   transition: flex-basis 0.1s;
   box-sizing: border-box;
-  background-color: #323940;
+
   color: var(--ds-text, #172b4d);
   scrollbar-width: thin;
   scrollbar-color: #323940 var(--ds-text);
@@ -120,7 +120,8 @@
 .card-details .card-details-header {
   margin: 0 -20px 5px;
   padding: 7px 20px;
-  background: #323940;
+  /* background: #323940; */
+  background :#ededed;
   border-bottom: 1px solid #dbdbdb;
   position: sticky;
   top: 0px;

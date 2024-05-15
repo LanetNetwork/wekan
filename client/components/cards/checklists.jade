@@ -2,13 +2,15 @@ template(name="checklists")
   .checklists-title
     h3.card-details-item-title
       i.fa.fa-check
-      | {{_ 'checklists'}}
+      | Чек-лист
+      //- | {{_ 'checklists'}}
       if canModifyCard
         +inlinedForm(autoclose=false classNames="js-add-checklist" cardId = cardId  position="top")
           +addChecklistItemForm
         else
           a.add-checklist-top.js-open-inlined-form(title="{{_ 'add-checklist'}}")
             i.fa.fa-plus
+            | Додати чек-лист
 
   .card-checklist-items
     each checklist in checklists
@@ -20,6 +22,7 @@ template(name="checklists")
     else
       a.add-checklist.js-open-inlined-form(title="{{_ 'add-checklist'}}")
         i.fa.fa-plus
+        | Додати чек-лист
 
 template(name="checklistDetail")
   .js-checklist.checklist
@@ -91,6 +94,7 @@ template(name="checklistItems")
       else
         a.add-checklist-item.js-open-inlined-form(title="{{_ 'add-checklist-item'}}")
           i.fa.fa-plus
+          p Додати в початок
   .checklist-items.js-checklist-items
     each item in checklist.items
       +inlinedForm(classNames="js-edit-checklist-item" item = item checklist = checklist)
@@ -103,6 +107,7 @@ template(name="checklistItems")
       else
         a.add-checklist-item.js-open-inlined-form(title="{{_ 'add-checklist-item'}}")
           i.fa.fa-plus
+          p Додати в кінець
 
 template(name='checklistItemDetail')
   .js-checklist-item.checklist-item(class="{{#if item.isFinished }}is-checked{{#if hideCheckedItems}} invisible{{/if}}{{/if}}"

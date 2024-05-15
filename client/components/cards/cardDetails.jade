@@ -145,7 +145,9 @@ template(name="cardDetails")
           .card-details-item.card-details-item-creator
             h3.card-details-item-title
               i.fa.fa-user
-              | {{_ 'creator'}}
+              | Створив
+              //- i.fa.fa-user
+              //- | {{_ 'creator'}}
 
             +userAvatar(userId=userId noRemove=true)
             | {{! XXX Hack to hide syntaxic coloration /// }}
@@ -169,7 +171,8 @@ template(name="cardDetails")
           .card-details-item.card-details-item-assignees
             h3.card-details-item-title
               i.fa.fa-user
-              | {{_ 'assignee'}}
+              | Виконувач
+              //- | {{_ 'assignee'}}
             each userId in getAssignees
               +userAvatar(userId=userId cardId=_id assignee=true)
               | {{! XXX Hack to hide syntaxic coloration /// }}

@@ -785,7 +785,8 @@ Users.helpers({
     if (listWidths[boardId] && listWidths[boardId][listId]) {
       return listWidths[boardId][listId];
     } else {
-      return 270; //TODO(mark-i-m): default?
+      // return 270; //TODO(mark-i-m): default?
+      return 280; //TODO(mark-i-m): default?
     }
   },
 

@@ -160,8 +160,9 @@
 .board-color-belize button[type=submit].primary,
 .board-color-belize input[type=submit].primary,
 .board-color-belize .sidebar .sidebar-content .sidebar-btn {
-  background-color: #216694;
-  border-radius: 7px;
+  background-color: #A0C0D5;
+  border-radius: 4px;
+  box-shadow: none;
 }
 .board-color-belize.pop-over .pop-over-list li a:not(.disabled):hover,
 .board-color-belize .sidebar .sidebar-content .sidebar-btn:hover,
@@ -2282,3 +2283,300 @@
 /* .board-color-natural  .card-details {
   background-color: #282E33;
 } */
+
+
+
+
+
+
+/* //// custom styles */
+
+
+
+
+
+.board-wrapper.board-color-belize .board-canvas {
+  background: #D3DCE1;
+}
+.board-wrapper.board-color-belize .swimlane .list {
+  padding: 0 5px;
+  border-left: none;
+
+}
+.board-wrapper.board-color-belize .swimlane .list .list-header {
+  color: #fff;
+  background: #2980B9;
+  /* border-radius: 4px; */
+  border-radius: 4px 4px 0 0;
+  border-bottom: none;
+
+}
+.board-wrapper.board-color-belize .swimlane .list .list-header .fa {
+  color: #fff;
+}
+.board-wrapper.board-color-belize .swimlane .list .list-body {
+  background: #2980B9;
+  border-radius: 0 0 4px 4px;
+  /* border-radius: 4px; */
+}
+.board-wrapper.board-color-belize .swimlane .list .list-body .minicards .minicard-wrapper .minicard .card-date:hover {
+  background: #777;
+
+
+}
+.board-wrapper.board-color-belize .swimlane .list .list-body .open-minicard-composer i {
+  color: #fff;
+}
+.board-wrapper.board-color-belize .swimlane .list .list-body .open-minicard-composer:hover i  {
+  color: #2980B9;
+}
+.board-wrapper.board-color-belize .swimlane .list .materialCheckBox {
+  border-color: #fff;
+}
+
+
+.board-wrapper.board-color-belize .swimlane .list-header .list-header-plus-top, .js-open-list-menu, .list-header-menu a {
+  color: #fff;
+}
+.board-wrapper.board-color-belize .swimlane .list-header  {
+  padding-bottom: 16px;
+}
+.board-wrapper.board-color-belize .swimlane .list .list-body .minicard.minicard-composer textarea.minicard-composer-textarea,
+.board-wrapper.board-color-belize .swimlane .list .list-body .minicard.minicard-composer textarea.minicard-composer-textarea:focus {
+  color: #000;
+}
+
+.board-wrapper.board-color-belize .swimlane .list .list-body .add-controls .quiet,
+.board-wrapper.board-color-belize .swimlane .list .list-body .add-controls .quiet a,
+.board-wrapper.board-color-belize .swimlane .list .list-body .add-controls .fa {
+  color: #fff;
+}
+
+
+.board-wrapper.board-color-belize .swimlane .list .list-body .open-minicard-composer {
+  width: 12px;
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details {
+  background-color: #D3DCE1;
+  scrollbar-color: #575757 var(--ds-text)!important;
+
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-canvas{
+  padding-left: 50px;
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-header {
+  background-color: #D3DCE1;
+  color: rgba(0,0,0,0.87);
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-header .fa {
+  color: rgba(0,0,0,0.54);
+}
+
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left {
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-canvas .new-comment textarea {
+  background: #fff;
+  color: #000;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-canvas .activities .activity .activity-desc {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-canvas .activities .activity .activity-desc .activity-comment {
+  background: #fff;
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-canvas .activities .activity .activity-desc .activity-member {
+  color: rgba(0,0,0,0.87);
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item.card-details-item-received{
+  background: #5ba639;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item.card-details-item-end{
+ background: #FA3F00;
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item.card-details-item-due,
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item.card-details-item-start {
+  background: #A0C0D5;
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item.card-details-item-due .card-date,
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item.card-details-item-start .card-date{
+  background: #A0C0D5;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item.card-details-item-due .card-date:hover,
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item.card-details-item-start .card-date:hover{
+  color: #fff;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item h3{
+  color: #fff;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item {
+  background-color: #A0C0D5;
+  border-radius: 4px;
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .js-open-inlined-form {
+  color: #fff;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-date time::before {
+  content: none;
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-item.card-details-item-assignees .add-assignee {
+  color: #fff;
+  box-shadow: 0 0 0 2px #fff inset;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-item.card-details-item-assignees .add-assignee .fa{
+  color: #fff;
+
+}
+
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-items .card-details-item.card-details-item-labels {
+  width: 45%;
+  flex-grow: initial;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-items .card-details-item.card-details-item-labels .card-label {
+  padding: 5px 8px;
+
+
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-items .card-details-item.card-details-item-labels .card-label.add-label {
+  background: rgba(41, 128, 185, 0.3);
+  border-radius: 4px;
+  border: none;
+  box-shadow: none;
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-items .card-details-item.card-details-item-labels .card-label.add-label:hover {
+
+  background: rgba(41, 128, 185, 0.2);
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-items .card-details-item.card-details-item-labels .card-label .fa {
+  color: #fff;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-items .card-details-item.card-details-item-labels .card-label a{
+  text-decoration: none;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-item-title {
+  color: rgba(0,0,0,0.87);
+
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-items .card-details-item.card-details-item-members .card-details-item-title,
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-items .card-details-item.card-details-item-labels .card-details-item-title {
+  font-size: 12px;
+  transform: translateX(0px);
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-items .card-details-item.card-details-item-members .add-member {
+
+  box-shadow: 0 0 0 2px #fff inset;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-items .card-details-item.card-details-item-members .add-member .fa{
+  color: #fff;
+
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right {
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-details-item-title {
+  position: relative;
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-details-item-title .fa:not(.fa-plus):not(.fa-times-thin) {
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-details-item-title .fa.fa-users {
+  position: static;
+  left: 0;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right  .member .avatar.avatar-initials{
+  background-color: rgba(160, 192, 213, 1);
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .viewer {
+  color: rgba(0,0,0,0.87);
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist{
+  background: transparent;
+  border-bottom: 1px solid rgba(200,200,200,0.3);
+  margin-bottom: 12px;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist .checklist-item{
+  background: transparent;
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist  .add-checklist-item{
+ display: inline-flex!important;
+ background: #A0C0D5;
+ border-radius: 4px;
+ color: #fff;
+ width: auto;
+ align-items: center;
+ justify-content: space-between;
+ padding: 4px 6px;
+ margin: 8px 0;
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist  .add-checklist-item .fa {
+  color: #fff;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist  .add-checklist-item p {
+  margin-bottom: 0;
+  margin-left: 4px;
+  font-size: 14px;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist  .add-checklist-item .fa {
+  margin-right: 6px;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist  .add-checklist-item:hover{
+ opacity: 0.9;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .edit-controls span,
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .edit-controls a{
+  color: #000;
+ }
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .add-checklist-top {
+  display: inline-flex !important;
+  background: #A0C0D5;
+  border-radius: 4px;
+  color: #fff;
+  width: auto;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  margin: 8px 0;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .add-checklist-top .fa {
+  color: #fff;
+  margin-right: 4px;
+}
+.pop-over.board-color-belize {
+
+}
+
+.pop-over.board-color-belize .content-wrapper .material-toggle-switch{
+  margin-top: 6px;
+  margin-bottom: 6px;
+}

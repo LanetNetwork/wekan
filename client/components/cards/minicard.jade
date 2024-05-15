@@ -31,6 +31,17 @@ template(name="minicard")
     if cover
       if currentBoard.allowsCoverAttachmentOnMinicard
         .minicard-cover(style="background-image: url('{{cover.link 'original'}}?dummyReloadAfterSessionEstablished={{sess}}');")
+
+    if labels
+      .minicard-labels(class="{{#if hiddenMinicardLabelText}}minicard-labels-no-text{{/if}}")
+        each labels
+          unless hiddenMinicardLabelText
+            span.js-card-label.card-label(class="card-label-{{color}}" title=name)
+              +viewer
+                = name
+          if hiddenMinicardLabelText
+            .minicard-label(class="card-label-{{color}}" title="{{name}}")
+
     .minicard-title
       if $eq 'prefix-with-full-path' currentBoard.presentParentTask
         .parent-prefix
@@ -57,15 +68,7 @@ template(name="minicard")
       if $eq 'subtext-with-parent' currentBoard.presentParentTask
         .parent-subtext
           | {{ parentCardName }}
-    if labels
-      .minicard-labels(class="{{#if hiddenMinicardLabelText}}minicard-labels-no-text{{/if}}")
-        each labels
-          unless hiddenMinicardLabelText
-            span.js-card-label.card-label(class="card-label-{{color}}" title=name)
-              +viewer
-                = name
-          if hiddenMinicardLabelText
-            .minicard-label(class="card-label-{{color}}" title="{{name}}")
+
 
     .minicard-custom-fields
       each customFieldsWD
@@ -172,7 +175,7 @@ template(name="minicard")
           .badge
             span.badge-icon.fa.fa-sort
             span.badge-text.check-list-sort {{ sort }}
-            
+
     if showMembers
       if getMembers
         .minicard-members.js-minicard-members
