@@ -9,7 +9,8 @@ template(name="minicard")
         .handle
           .fa.fa-arrows
       else
-        a.fa.fa-navicon.minicard-details-menu.js-open-minicard-details-menu(title="{{_ 'cardDetailsActionsPopup-title'}}")
+        //- a.fa.fa-navicon.minicard-details-menu.js-open-minicard-details-menu(title="{{_ 'cardDetailsActionsPopup-title'}}")
+        img(class="minicard-details-menu js-open-minicard-details-menu" src="/custom/dots.svg", alt="" title="{{_ 'cardDetailsActionsPopup-title'}}")
 
     if labels
       .minicard-labels(class="{{#if hiddenMinicardLabelText}}minicard-labels-no-text{{/if}}")

@@ -12,6 +12,26 @@
   border: 0;
   padding: 0;
 }
+#notifications img.notifications-drawer-toggle {
+  margin:0 10px;
+  width: 16px;
+  cursor: pointer;
+}
+
+
+#notifications .bell-block img.notifications-drawer-toggle.norm {
+  display: block;
+}
+#notifications .bell-block img.notifications-drawer-toggle.red {
+  display: none;
+}
+
+#notifications .bell-block.alert img.notifications-drawer-toggle.norm {
+  display: none;
+}
+#notifications .bell-block.alert img.notifications-drawer-toggle.red {
+  display: block;
+}
 #notifications .notifications-drawer-toggle.alert {
   background-color: #eb4646;
 }

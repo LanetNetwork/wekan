@@ -16,15 +16,18 @@ template(name="memberMenuPopup")
       li
         a.js-my-cards(href="{{pathFor 'my-cards'}}")
           i.fa.fa-list
-          | {{_ 'my-cards'}}
+          | Мої картки
+          //- | {{_ 'my-cards'}}
       li
         a.js-due-cards(href="{{pathFor 'due-cards'}}")
           i.fa.fa-calendar
-          | {{_ 'dueCards-title'}}
+          | Картки до виконання
+          //- | {{_ 'dueCards-title'}}
       li
         a.js-global-search(href="{{pathFor 'global-search'}}")
           i.fa.fa-search
-          | {{_ 'globalSearch-title'}}
+          | Пошук по всіх дошках
+          //- | {{_ 'globalSearch-title'}}
       li
         a(href="{{pathFor 'home'}}")
           span.fa.fa-home
@@ -32,7 +35,8 @@ template(name="memberMenuPopup")
       li
         a(href="{{pathFor 'public'}}")
           span.fa.fa-globe
-          | {{_ 'public'}}
+          | Загальні
+          //- | {{_ 'public'}}
       li
         a.board-header-btn.js-open-archived-board
           i.fa.fa-archive
@@ -83,7 +87,8 @@ template(name="memberMenuPopup")
       li
         a.js-logout
           i.fa.fa-sign-out
-          | {{_ 'log-out'}}
+          | Вийти
+          //- | {{_ 'log-out'}}
 
 template(name="invitePeoplePopup")
   ul#registration-setting.setting-detail

@@ -2305,6 +2305,9 @@
   border-left: none;
 
 }
+.board-wrapper.board-color-belize .swimlane.js-swimlanes {
+  margin-top: 8px;
+}
 .board-wrapper.board-color-belize .swimlane .list .list-header {
   color: #fff;
   background: #2980B9;
@@ -2783,4 +2786,8 @@
 .board-color-belize.board-wrapper .swimlane .minicard .card-date.end-date {
   background: #FA3F00;
 
+}
+
+.pop-over-list li .swimline-inverse {
+  width: 17px;
 }

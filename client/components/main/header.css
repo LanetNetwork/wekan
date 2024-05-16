@@ -59,6 +59,25 @@
   overflow: hidden;
   line-height: 28px;
   margin: 0 2px;
+  display: flex;
+  align-items: center;
+
+
+}
+
+
+
+
+
+
+#header #header-main-bar .board-header-btn img {
+  margin: 0 5px;
+  width: 16px;
+}
+#header #header-main-bar .board-header-btn img + span {
+  display: inline-block;
+  margin-top: 1px;
+  margin-right: 10px;
 }
 #header #header-main-bar .board-header-btn i.fa {
   float: left;
