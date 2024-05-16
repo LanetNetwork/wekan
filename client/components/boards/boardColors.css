@@ -2760,3 +2760,12 @@
 .board-color-belize.board-wrapper .swimlane .minicard .card-date.received-date time::before {
   content: url("/custom/calendar-blank.svg");
 }
+.board-color-belize.board-wrapper .swimlane .minicard .badges .badge {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+.board-color-belize.board-wrapper .swimlane .minicard .badges .badge img {
+  margin-bottom: 0;
+  margin-right: 2px;
+}
