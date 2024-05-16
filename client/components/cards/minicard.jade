@@ -136,6 +136,11 @@ template(name="minicard")
         +userAvatar(userId=this.userId noRemove=true)
 
     .badges
+      if getDescription
+        unless currentBoard.allowsDescriptionTextOnMinicard
+          .badge.badge-state-image-only(title=getDescription)
+            //- span.badge-icon.fa.fa-align-left
+            img(src="/custom/desc-badge.svg", alt="")
       if canModifyCard
         if comments.length
           .badge(title="{{_ 'card-comments-title' comments.length }}")
@@ -145,11 +150,11 @@ template(name="minicard")
               = comments.length
             //span.badge-comment.badge-text
             //|  {{_ 'comment'}}
-      if getDescription
-        unless currentBoard.allowsDescriptionTextOnMinicard
-          .badge.badge-state-image-only(title=getDescription)
-            //- span.badge-icon.fa.fa-align-left
-            img(src="/custom/desc-badge.svg", alt="")
+      //- if getDescription
+      //-   unless currentBoard.allowsDescriptionTextOnMinicard
+      //-     .badge.badge-state-image-only(title=getDescription)
+      //-       //- span.badge-icon.fa.fa-align-left
+      //-       img(src="/custom/desc-badge.svg", alt="")
       if getVoteQuestion
         .badge.badge-state-image-only(title=getVoteQuestion)
           span.badge-icon.fa.fa-thumbs-up(class="{{#if voteState}}text-green{{/if}}")
@@ -162,7 +167,11 @@ template(name="minicard")
           if expiredPoker
             span.badge-text {{ getPokerEstimation }}
       if attachments.length
-        if currentBoard.allowsBadgeAttachmentOnMinicard
+        .badge
+
+          img(src="/custom/attach-badge.svg", alt="")
+          span.badge-text= attachments.length
+        //- if currentBoard.allowsBadgeAttachmentOnMinicard
           .badge
             //- span.badge-icon.fa.fa-paperclip
             img(src="/custom/attach-badge.svg", alt="")

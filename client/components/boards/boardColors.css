@@ -2322,8 +2322,8 @@
   /* border-radius: 4px; */
 }
 .board-wrapper.board-color-belize .swimlane .list .list-body .minicards .minicard-wrapper .minicard .card-date:hover {
-  background: #777;
-
+  color: #fff;
+  opacity: 0.8;
 
 }
 .board-wrapper.board-color-belize .swimlane .list .list-body .open-minicard-composer i {
@@ -2768,4 +2768,19 @@
 .board-color-belize.board-wrapper .swimlane .minicard .badges .badge img {
   margin-bottom: 0;
   margin-right: 2px;
+}
+.board-color-belize.board-wrapper .swimlane .minicard .card-date.received-date {
+  background: #5ba639;
+}
+
+.board-color-belize.board-wrapper .swimlane .minicard .card-date.start-date {
+  background: #A0C0D5;
+}
+.board-color-belize.board-wrapper .swimlane .minicard .card-date.due-date {
+  background: #A0C0D5;
+
+}
+.board-color-belize.board-wrapper .swimlane .minicard .card-date.end-date {
+  background: #FA3F00;
+
 }
