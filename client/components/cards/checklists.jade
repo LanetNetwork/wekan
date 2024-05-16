@@ -2,7 +2,7 @@ template(name="checklists")
   .checklists-title
     h3.card-details-item-title
       //- i.fa.fa-check
-      img( class="checkbox-img" src="/checkbox.svg", alt="")
+      img( class="checkbox-img" src="/custom/checkbox.svg", alt="")
       | Чек-лист
       //- | {{_ 'checklists'}}
       if canModifyCard
@@ -34,7 +34,7 @@ template(name="checklistDetail")
         span
         if canModifyCard
           a.fa.fa-navicon.checklist-details-menu.js-open-checklist-details-menu(title="{{_ 'checklistActionsPopup-title'}}")
-
+            img(class="dots-img" src="/custom/dots.svg", alt="")
         if canModifyCard
           h4.title.js-open-inlined-form.is-editable
             if isTouchScreenOrShowDesktopDragHandles
@@ -108,7 +108,7 @@ template(name="checklistItems")
       else
         a.add-checklist-item.js-open-inlined-form(title="{{_ 'add-checklist-item'}}")
           //- i.fa.fa-plus
-          p Додати
+          p Додати елемент
 
 template(name='checklistItemDetail')
   .js-checklist-item.checklist-item(class="{{#if item.isFinished }}is-checked{{#if hideCheckedItems}} invisible{{/if}}{{/if}}"

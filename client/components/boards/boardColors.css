@@ -2440,6 +2440,7 @@
 }
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item.card-details-item-received{
   background: #5ba639;
+  padding: 8px;
 }
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item.card-details-item-end{
  background: #FA3F00;
@@ -2460,6 +2461,7 @@
 }
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item h3{
   color: #fff;
+  margin-bottom: 4px;
 }
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-left .card-details-items .card-details-item {
   background-color: #A0C0D5;
@@ -2602,6 +2604,7 @@
   background: transparent;
 
 }
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .add-subtask,
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist  .add-checklist-item{
  display: inline-flex!important;
  background: #A0C0D5;
@@ -2612,6 +2615,7 @@
  justify-content: space-between;
  padding: 4px 6px;
  margin: 8px 0;
+ font-size: 14px;
 
 }
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist  .add-checklist-item .fa {
@@ -2642,7 +2646,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 4px 6px;
-  margin: 8px 0;
+  /* margin: 8px 0; */
+  font-size: 14px;
 }
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .add-checklist {
   display: inline-flex !important;
@@ -2718,4 +2723,24 @@
   height: 10px;
   content: "";
   transform: rotate(40deg);
+}
+
+.card-details .card-details-right .card-subtasks-items.ui-sortable .subtask {
+  position: relative;
+
+}
+.card-details .card-details-right .checklist-title {
+  position: relative;
+}
+.board-wrapper .swimlane .card-details .card-details-right .dots-img {
+  position: absolute;
+  right: 13px;
+  top: 4px;
+}
+.board-wrapper .swimlane .card-details .card-details-right .subtask-title {
+  width: calc(100% - 40px);
+}
+
+.board-wrapper .swimlane .card-details .card-details-right .fa.fa-navicon:before {
+  content: '';
 }

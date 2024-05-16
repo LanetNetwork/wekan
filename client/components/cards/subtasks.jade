@@ -1,7 +1,7 @@
 template(name="subtasks")
   h3.card-details-item-title
     //- i.fa.fa-sitemap
-    img(class="subtasks-img" src="/subtasks-img.svg", alt="")
+    img(class="subtasks-img" src="/custom/subtasks-img.svg", alt="")
     | {{_ 'subtasks'}}
   if currentUser.isBoardAdmin
     if toggleDeleteDialog.get
@@ -16,8 +16,9 @@ template(name="subtasks")
     +inlinedForm(autoclose=false classNames="js-add-subtask" cardId = cardId)
       +addSubtaskItemForm
     else
-      a.js-open-inlined-form(title="{{_ 'add-subtask'}}")
-        i.fa.fa-plus
+      a.js-open-inlined-form.add-subtask(title="{{_ 'add-subtask'}}")
+        //- i.fa.fa-plus
+        | Додати елемент
 
 template(name="subtaskDetail")
   .js-subtasks.subtask
@@ -28,6 +29,7 @@ template(name="subtaskDetail")
         span
         if canModifyCard
           a.fa.fa-navicon.subtask-details-menu.js-open-subtask-details-menu(title="{{_ 'subtaskActionsPopup-title'}}")
+            img(class="dots-img" src="/custom/dots.svg", alt="")
         if canModifyCard
           h2.title.js-open-inlined-form.is-editable
             +viewer

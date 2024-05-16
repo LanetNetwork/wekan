@@ -47,7 +47,7 @@ template(name="cardDetails")
                   | ##{getCardNumber}
 
               = getTitle
-            img(class="task-title-img" src="/task-title.svg", alt="")
+            img(class="task-title-img" src="/custom/task-title.svg", alt="")
             if isWatching
               i.card-details-watch.fa.fa-eye
         .card-details-path
@@ -91,7 +91,8 @@ template(name="cardDetails")
         if currentBoard.allowsReceivedDate
           .card-details-item.card-details-item-received
             h3.card-details-item-title
-              i.fa.fa-sign-out
+              //- i.fa.fa-sign-out
+              img(class="calendar-start-img" src="/custom/calendar-start.svg", alt="")
               | {{_ 'card-received'}}
             if getReceived
               +cardReceivedDate
@@ -104,8 +105,9 @@ template(name="cardDetails")
         if currentBoard.allowsStartDate
           .card-details-item.card-details-item-start
             h3.card-details-item-title
-              i.fa.fa-hourglass-start
-              | {{_ 'card-start'}}
+              //- i.fa.fa-hourglass-start
+              img(class="calendar-start-img" src="/custom/calendar-start.svg", alt="")
+              | Початок виконання
             if getStart
               +cardStartDate
             else
@@ -117,8 +119,9 @@ template(name="cardDetails")
         if currentBoard.allowsDueDate
           .card-details-item.card-details-item-due
             h3.card-details-item-title
-              i.fa.fa-sign-in
-              | {{_ 'card-due'}}
+              //- i.fa.fa-sign-in
+              img(class="calendar-end-img" src="/custom/calendar-end.svg", alt="")
+              | Крайній термін
             if getDue
               +cardDueDate
             else
@@ -130,8 +133,9 @@ template(name="cardDetails")
         if currentBoard.allowsEndDate
           .card-details-item.card-details-item-end
             h3.card-details-item-title
-              i.fa.fa-hourglass-end
-              | {{_ 'card-end'}}
+              //- i.fa.fa-hourglass-end
+              img(class="calendar-check-img" src="/custom/calendar-check.svg", alt="")
+              | Закінчення
             if getEnd
               +cardEndDate
             else
@@ -191,7 +195,7 @@ template(name="cardDetails")
           .card-details-item.card-details-item-name
             h3.card-details-item-title
               i.fa.fa-shopping-cart
-              | {{_ 'requested-by'}}
+              | За проханням
             if canModifyCard
               unless currentUser.isWorker
                 +inlinedForm(classNames="js-card-details-requester")
@@ -211,7 +215,7 @@ template(name="cardDetails")
           .card-details-item.card-details-item-name
             h3.card-details-item-title
               i.fa.fa-user-plus
-              | {{_ 'assigned-by'}}
+              | Назначив
             if canModifyCard
               unless currentUser.isWorker
                 +inlinedForm(classNames="js-card-details-assigner")
