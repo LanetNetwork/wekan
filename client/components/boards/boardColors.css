@@ -2744,3 +2744,19 @@
 .board-wrapper .swimlane .card-details .card-details-right .fa.fa-navicon:before {
   content: '';
 }
+
+
+.board-color-belize.board-wrapper .swimlane .minicard .card-date.end-date time::before {
+  content: url("/custom/calendar-check.svg");
+
+}
+.board-color-belize.board-wrapper .swimlane .minicard .card-date.due-date time::before {
+  content: url("/custom/calendar-end.svg");
+}
+.board-color-belize.board-wrapper .swimlane .minicard .card-date.start-date time::before {
+
+  content: url("/custom/calendar-start.svg");
+}
+.board-color-belize.board-wrapper .swimlane .minicard .card-date.received-date time::before {
+  content: url("/custom/calendar-blank.svg");
+}
