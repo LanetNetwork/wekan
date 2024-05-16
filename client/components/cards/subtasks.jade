@@ -1,6 +1,7 @@
 template(name="subtasks")
   h3.card-details-item-title
-    i.fa.fa-sitemap
+    //- i.fa.fa-sitemap
+    img(class="subtasks-img" src="/subtasks-img.svg", alt="")
     | {{_ 'subtasks'}}
   if currentUser.isBoardAdmin
     if toggleDeleteDialog.get

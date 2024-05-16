@@ -1,7 +1,8 @@
 template(name="checklists")
   .checklists-title
     h3.card-details-item-title
-      i.fa.fa-check
+      //- i.fa.fa-check
+      img( class="checkbox-img" src="/checkbox.svg", alt="")
       | Чек-лист
       //- | {{_ 'checklists'}}
       if canModifyCard
