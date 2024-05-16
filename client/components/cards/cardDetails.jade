@@ -45,7 +45,9 @@ template(name="cardDetails")
               if currentBoard.allowsCardNumber
                 span.card-number
                   | ##{getCardNumber}
+
               = getTitle
+            img(class="task-title-img" src="/task-title.svg", alt="")
             if isWatching
               i.card-details-watch.fa.fa-eye
         .card-details-path
@@ -577,8 +579,8 @@ template(name="cardDetails")
         if currentBoard.allowsLabels
           .card-details-item.card-details-item-labels
             h3.card-details-item-title
-              i.fa.fa-tags
-              | {{_ 'labels'}}
+              //- i.fa.fa-tags
+              | Мітки
             a(class="{{#if canModifyCard}}js-add-labels{{else}}is-disabled{{/if}}" title="{{_ 'card-labels-title'}}")
               each labels
                 span.card-label(class="card-label-{{color}}" title=name)
@@ -592,8 +594,8 @@ template(name="cardDetails")
         if currentBoard.allowsMembers
           .card-details-item.card-details-item-members
             h3.card-details-item-title
-              i.fa.fa-users
-              | {{_ 'members'}}
+              //- i.fa.fa-users
+              | Учасники
             each userId in getMembers
               +userAvatar(userId=userId cardId=_id)
               | {{! XXX Hack to hide syntaxic coloration /// }}
@@ -606,28 +608,31 @@ template(name="cardDetails")
         unless currentUser.isWorker
           if currentBoard.allowsDescriptionTitle
             hr
-            h3.card-details-item-title
-              i.fa.fa-align-left
-              | {{_ 'description'}}
-          if currentBoard.allowsDescriptionText
-            +inlinedCardDescription(classNames="card-description js-card-description")
-              +descriptionForm
-              .edit-controls.clearfix
-                button.primary(type="submit") {{_ 'save'}}
-                a.fa.fa-times-thin.js-close-inlined-form
-            else
+            .desc-holder
+
+              h3.card-details-item-title
+                i.fa.fa-align-left
+                | {{_ 'description'}}
               if currentBoard.allowsDescriptionText
-                a.js-open-inlined-form.right(title="{{_ 'edit'}}" value=title)
-                  i.fa.fa-pencil-square-o
-                if getDescription
-                  +viewer
-                    = getDescription
-                if (hasUnsavedValue 'cardDescription' _id)
-                  p.quiet
-                    | {{_ 'unsaved-description'}}
-                    a.js-open-inlined-form {{_ 'view-it'}}
-                    = ' - '
-                    a.js-close-inlined-form {{_ 'discard'}}
+                +inlinedCardDescription(classNames="card-description js-card-description")
+                  +descriptionForm
+                  .edit-controls.clearfix
+                    button.primary(type="submit") {{_ 'save'}}
+                    a.fa.fa-times-thin.js-close-inlined-form
+                else
+                  if currentBoard.allowsDescriptionText
+                    a.js-open-inlined-form.right(title="{{_ 'edit'}}" value=title)
+                      //- i.fa.fa-pencil-square-o
+                      | Змінити
+                    if getDescription
+                      +viewer
+                        = getDescription
+                    if (hasUnsavedValue 'cardDescription' _id)
+                      p.quiet
+                        | {{_ 'unsaved-description'}}
+                        a.js-open-inlined-form {{_ 'view-it'}}
+                        = ' - '
+                        a.js-close-inlined-form {{_ 'discard'}}
       else if getDescription
         if currentBoard.allowsDescriptionTitle
           hr

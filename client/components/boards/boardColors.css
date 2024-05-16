@@ -2298,6 +2298,8 @@
 .board-wrapper.board-color-belize .board-canvas {
   background: #D3DCE1;
 }
+
+
 .board-wrapper.board-color-belize .swimlane .list {
   padding: 0 5px;
   border-left: none;
@@ -2360,6 +2362,15 @@
 .board-wrapper.board-color-belize .swimlane .card-details {
   background-color: #D3DCE1;
   scrollbar-color: #575757 var(--ds-text)!important;
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-canvas .card-details-title {
+  position: relative;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-canvas .card-details-title .task-title-img{
+  position: absolute;
+  left: -28px;
+  top: 2px;
 
 }
 
@@ -2490,6 +2501,39 @@
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-right {
 
 }
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-subtasks-items {
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-subtasks-items .js-subtasks .title{
+  margin-bottom: 0;
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-subtasks-items .js-subtasks .title p{
+  margin-bottom: 0;
+
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .desc-holder {
+  position: relative;
+}
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .desc-holder .card-details-item-title {
+  margin-bottom: 30px;
+}
+
+.board-wrapper.board-color-belize .swimlane .card-details .card-details-right .desc-holder .js-open-inlined-form {
+  position: absolute;
+  right: 0%;
+  float: none;
+  top: 0;
+  width: 50px;
+  font-size: 14px;
+  color: #fff;
+  background: #A0C0D5;
+  border-radius: 4px;
+  padding: 5px 12px;
+  margin-bottom: 0;
+
+
+}
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-details-item-title {
   position: relative;
   font-size: 18px;
@@ -2543,7 +2587,7 @@
 }
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist  .add-checklist-item p {
   margin-bottom: 0;
-  margin-left: 4px;
+  /* margin-left: 4px; */
   font-size: 14px;
 }
 .board-wrapper.board-color-belize .swimlane .card-details .card-details-right .card-checklist-attachmentGalleries .card-checklists .card-checklist-items .checklist

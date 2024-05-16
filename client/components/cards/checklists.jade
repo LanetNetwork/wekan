@@ -9,7 +9,7 @@ template(name="checklists")
           +addChecklistItemForm
         else
           a.add-checklist-top.js-open-inlined-form(title="{{_ 'add-checklist'}}")
-            i.fa.fa-plus
+            //- i.fa.fa-plus
             | Додати чек-лист
 
   .card-checklist-items
@@ -19,10 +19,10 @@ template(name="checklists")
   if canModifyCard
     +inlinedForm(autoclose=false classNames="js-add-checklist" cardId = cardId)
       +addChecklistItemForm(checklist=checklist showNewlineBecomesNewChecklistItem=false)
-    else
-      a.add-checklist.js-open-inlined-form(title="{{_ 'add-checklist'}}")
-        i.fa.fa-plus
-        | Додати чек-лист
+    //- else
+    //-   a.add-checklist.js-open-inlined-form(title="{{_ 'add-checklist'}}")
+    //-     i.fa.fa-plus
+    //-     | Додати чек-лист
 
 template(name="checklistDetail")
   .js-checklist.checklist
@@ -91,10 +91,10 @@ template(name="checklistItems")
     if canModifyCard
       +inlinedForm(autoclose=false classNames="js-add-checklist-item" checklist = checklist position="top")
         +addChecklistItemForm(checklist=checklist showNewlineBecomesNewChecklistItem=true)
-      else
-        a.add-checklist-item.js-open-inlined-form(title="{{_ 'add-checklist-item'}}")
-          i.fa.fa-plus
-          p Додати в початок
+      //- else
+      //-   a.add-checklist-item.js-open-inlined-form(title="{{_ 'add-checklist-item'}}")
+      //-     i.fa.fa-plus
+      //-     p Додати в початок
   .checklist-items.js-checklist-items
     each item in checklist.items
       +inlinedForm(classNames="js-edit-checklist-item" item = item checklist = checklist)
@@ -106,8 +106,8 @@ template(name="checklistItems")
         +addChecklistItemForm(checklist=checklist showNewlineBecomesNewChecklistItem=true)
       else
         a.add-checklist-item.js-open-inlined-form(title="{{_ 'add-checklist-item'}}")
-          i.fa.fa-plus
-          p Додати в кінець
+          //- i.fa.fa-plus
+          p Додати
 
 template(name='checklistItemDetail')
   .js-checklist-item.checklist-item(class="{{#if item.isFinished }}is-checked{{#if hideCheckedItems}} invisible{{/if}}{{/if}}"

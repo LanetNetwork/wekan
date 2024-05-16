@@ -120,7 +120,12 @@ const CardDate = BlazeComponent.extendComponent({
   },
 
   showISODate() {
+    // console.log(`this.date.get()`,this.date.get().format('MM-DD-YYYY'))
     return this.date.get().toISOString();
+  },
+  showDateFormatted() {
+
+    return this.date.get().format('MM.DD.YYYY h:mm')
   },
 });
 
