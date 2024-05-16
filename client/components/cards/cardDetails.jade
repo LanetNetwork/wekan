@@ -13,11 +13,11 @@ template(name="cardDetails")
         unless isMiniScreen
           unless isPopup
             a.fa.fa-times-thin.close-card-details.js-close-card-details(title="{{_ 'close-card'}}")
-            if canModifyCard
-              if cardMaximized
-                a.fa.fa-window-minimize.minimize-card-details.js-minimize-card-details(title="{{_ 'minimize-card'}}")
-              else
-                a.fa.fa-window-maximize.maximize-card-details.js-maximize-card-details(title="{{_ 'maximize-card'}}")
+            //- if canModifyCard
+            //-   if cardMaximized
+            //-     a.fa.fa-window-minimize.minimize-card-details.js-minimize-card-details(title="{{_ 'minimize-card'}}")
+            //-   else
+            //-     a.fa.fa-window-maximize.maximize-card-details.js-maximize-card-details(title="{{_ 'maximize-card'}}")
           if canModifyCard
             a.fa.fa-navicon.card-details-menu.js-open-card-details-menu(title="{{_ 'cardDetailsActionsPopup-title'}}")
             a.fa.fa-link.card-copy-button.js-copy-link(
@@ -230,18 +230,18 @@ template(name="cardDetails")
         if $or currentBoard.allowsCardSortingByNumber getSpentTime
           hr
 
-        if currentBoard.allowsCardSortingByNumber
-          .card-details-item.card-details-sort-order
-            h3.card-details-item-title
-              i.fa.fa-sort
-              | {{_ 'sort'}}
-            if canModifyCard
-              +inlinedForm(classNames="js-card-details-sort")
-                +editCardSortOrderForm
-              else
-                a.js-open-inlined-form
-                  +viewer
-                    = sort
+        //- if currentBoard.allowsCardSortingByNumber
+        //-   .card-details-item.card-details-sort-order
+        //-     h3.card-details-item-title
+        //-       i.fa.fa-sort
+        //-       | {{_ 'sort'}}
+        //-     if canModifyCard
+        //-       +inlinedForm(classNames="js-card-details-sort")
+        //-         +editCardSortOrderForm
+        //-       else
+        //-         a.js-open-inlined-form
+        //-           +viewer
+        //-             = sort
 
         if currentBoard.allowsShowLists
           .card-details-item.card-details-show-lists
