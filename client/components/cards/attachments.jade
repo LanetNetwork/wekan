@@ -87,14 +87,17 @@ template(name="attachmentGallery")
               span.file-size ({{fileSize size}})
             .attachment-actions
               a.js-download(href="{{link}}?download=true", download="{{name}}")
-                i.fa.fa-download.icon(title="{{_ 'download'}}")
+                //- i.fa.fa-download.icon(title="{{_ 'download'}}")
+                img(class="download-img" src="/custom/download-circle-outline.svg", alt="{{_ 'download'}}",title="{{_ 'download'}}")
               if currentUser.isBoardMember
                 unless currentUser.isCommentOnly
                   unless currentUser.isWorker
                     a.js-rename
-                      i.fa.fa-pencil-square-o.icon(title="{{_ 'rename'}}")
+                      //- i.fa.fa-pencil-square-o.icon(title="{{_ 'rename'}}")
+                      img(class="rename-img" src="/custom/circle-edit-outline.svg", alt="{{_ 'rename'}}",title="{{_ 'rename'}}")
                     a.js-confirm-delete
-                      i.fa.fa-trash.icon(title="{{_ 'delete'}}")
+                      //- i.fa.fa-trash.icon(title="{{_ 'delete'}}")
+                      img(class="rename-img" src="/custom/delete-circle-outline.svg", alt="{{_ 'delete'}}",title="{{_ 'delete'}}")
                     a.fa.fa-navicon.icon.js-open-attachment-menu(data-attachment-link="{{link}}" title="{{_ 'attachmentActionsPopup-title'}}")
 
 

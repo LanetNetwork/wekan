@@ -2791,3 +2791,26 @@
 .pop-over-list li .swimline-inverse {
   width: 17px;
 }
+
+
+.board-wrapper .swimlane.ui-sortable {
+  margin-top: 8px;
+}
+.board-color-belize.board-wrapper .swimlane .card-details .card-details-canvas .card-checklist-attachmentGallery .attachment-gallery .attachment-details-container .attachment-details{
+  flex-direction: column;
+
+}
+.board-color-belize.board-wrapper .swimlane .card-details .card-details-canvas .card-checklist-attachmentGallery .attachment-gallery .attachment-details-container .attachment-details b {
+  color: #000;
+}
+.board-color-belize.board-wrapper .swimlane .card-details .card-details-canvas .card-checklist-attachmentGallery .attachment-gallery .attachment-details-container .attachment-details span {
+  color: #000;
+}
+.board-color-belize.board-wrapper .swimlane .card-details .card-details-canvas .card-checklist-attachmentGallery .attachment-gallery .attachment-details-container .attachment-actions {
+  margin-top: 20px;
+}
+
+
+.board-color-belize.board-wrapper .swimlane .card-details .card-details-canvas .card-checklist-attachmentGallery .attachment-gallery .attachment-details-container .attachment-actions a {
+  margin-right: 10px;
+}
