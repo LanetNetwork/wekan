@@ -2,8 +2,8 @@ template(name="listBody")
   .list-body
     .minicards.clearfix.js-minicards(class="{{#if reachedWipLimit}}js-list-full{{/if}}")
       if cards.length
-        +inlinedForm(autoclose=true position="top")
-          +addCardForm(listId=_id position="top")
+        +inlinedForm(autoclose=true position="bottom")
+          +addCardForm(listId=_id position="bottom")
       ul.sidebar-list
         each customFieldsSum
           li
@@ -26,12 +26,12 @@ template(name="listBody")
       if (showSpinner (idOrNull ../../_id))
         +spinnerList
 
-      if canSeeAddCard
-        +inlinedForm(autoclose=true position="bottom")
-          +addCardForm(listId=_id position="bottom")
-        else
-          a.open-minicard-composer.js-card-composer.js-open-inlined-form(title="{{_ 'add-card-to-bottom-of-list'}}")
-            i.fa.fa-plus
+      //- if canSeeAddCard
+      //-   +inlinedForm(autoclose=true position="bottom")
+      //-     +addCardForm(listId=_id position="bottom")
+      //-   else
+      //-     a.open-minicard-composer.js-card-composer.js-open-inlined-form(title="{{_ 'add-card-to-bottom-of-list'}}")
+      //-       i.fa.fa-plus
 
 template(name="spinnerList")
   .sk-spinner.sk-spinner-list(

@@ -89,7 +89,7 @@ template(name="cardDetails")
           hr
 
         if currentBoard.allowsReceivedDate
-          .card-details-item.card-details-item-received
+          .card-details-item.card-details-item-received(class='{{#if getReceived}}selected-date-point{{/if}}')
             h3.card-details-item-title
               //- i.fa.fa-sign-out
               img(class="calendar-blank-img" src="/custom/calendar-blank.svg", alt="")
@@ -103,7 +103,7 @@ template(name="cardDetails")
                     i.fa.fa-plus
 
         if currentBoard.allowsStartDate
-          .card-details-item.card-details-item-start
+          .card-details-item.card-details-item-start(class='{{#if getStart}}selected-date-point{{/if}}')
             h3.card-details-item-title
               //- i.fa.fa-hourglass-start
               img(class="calendar-start-img" src="/custom/calendar-start.svg", alt="")
@@ -117,7 +117,7 @@ template(name="cardDetails")
                     i.fa.fa-plus
 
         if currentBoard.allowsDueDate
-          .card-details-item.card-details-item-due
+          .card-details-item.card-details-item-due(class='{{#if getDue}}selected-date-point{{/if}}')
             h3.card-details-item-title
               //- i.fa.fa-sign-in
               img(class="calendar-end-img" src="/custom/calendar-end.svg", alt="")
@@ -131,7 +131,7 @@ template(name="cardDetails")
                     i.fa.fa-plus
 
         if currentBoard.allowsEndDate
-          .card-details-item.card-details-item-end
+          .card-details-item.card-details-item-end(class='{{#if getEnd}}selected-date-point{{/if}}')
             h3.card-details-item-title
               //- i.fa.fa-hourglass-end
               img(class="calendar-check-img" src="/custom/calendar-check.svg", alt="")
