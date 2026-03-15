@@ -1,0 +1,12 @@
+name: Build
+on: push
+jobs:
+  build:
+    runs-on: github-dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Prepare to build
+        run: sed -i 's/#build:/build:/; s/#  context:/  context:/; s/#  dockerfile:/  dockerfile:/' docker-compose.yml
+      - name: Run docker compose build
+        run: sudo docker compose up -d --build
