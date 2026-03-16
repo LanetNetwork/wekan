@@ -51,14 +51,14 @@ Announcements.attachSchema(
 
 Announcements.allow({
   update(userId) {
-    const user = ReactiveCache.getUser(userId);
+    const user = Meteor.users.findOne(userId);
     return user && user.isAdmin;
   },
 });
 
 if (Meteor.isServer) {
-  Meteor.startup(() => {
-    Announcements._collection.createIndex({ modifiedAt: -1 });
+  Meteor.startup(async () => {
+    await Announcements._collection.createIndexAsync({ modifiedAt: -1 });
     const announcements = Announcements.findOne({});
     if (!announcements) {
       Announcements.insert({ enabled: false, sort: 0 });

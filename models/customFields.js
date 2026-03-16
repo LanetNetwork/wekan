@@ -152,17 +152,14 @@ CustomFields.addToAllCards = cf => {
   );
 };
 
-CustomFields.mutations({
-  addBoard(boardId) {
+CustomFields.helpers({
+  async addBoard(boardId) {
     if (boardId) {
-      return {
-        $push: {
-          boardIds: boardId,
-        },
-      };
-    } else {
-      return null;
+      return await CustomFields.updateAsync(this._id, {
+        $push: { boardIds: boardId },
+      });
     }
+    return null;
   },
 });
 
@@ -170,25 +167,25 @@ CustomFields.allow({
   insert(userId, doc) {
     return allowIsAnyBoardMember(
       userId,
-      ReactiveCache.getBoards({
+      Boards.find({
         _id: { $in: doc.boardIds },
-      }),
+      }).fetch(),
     );
   },
   update(userId, doc) {
     return allowIsAnyBoardMember(
       userId,
-      ReactiveCache.getBoards({
+      Boards.find({
         _id: { $in: doc.boardIds },
-      }),
+      }).fetch(),
     );
   },
   remove(userId, doc) {
     return allowIsAnyBoardMember(
       userId,
-      ReactiveCache.getBoards({
+      Boards.find({
         _id: { $in: doc.boardIds },
-      }),
+      }).fetch(),
     );
   },
   fetch: ['userId', 'boardIds'],
@@ -217,9 +214,9 @@ function customFieldDeletion(userId, doc) {
 
 // This has some bug, it does not show edited customField value at Outgoing Webhook,
 // instead it shows undefined, and no listId and swimlaneId.
-function customFieldEdit(userId, doc) {
-  const card = ReactiveCache.getCard(doc.cardId);
-  const customFieldValue = ReactiveCache.getActivity({ customFieldId: doc._id }).value;
+async function customFieldEdit(userId, doc) {
+  const card = await ReactiveCache.getCard(doc.cardId);
+  const customFieldValue = (await ReactiveCache.getActivity({ customFieldId: doc._id })).value;
   Activities.insert({
     userId,
     activityType: 'setCustomField',
@@ -232,9 +229,9 @@ function customFieldEdit(userId, doc) {
 }
 
 if (Meteor.isServer) {
-  Meteor.startup(() => {
-    CustomFields._collection.createIndex({ modifiedAt: -1 });
-    CustomFields._collection.createIndex({ boardIds: 1 });
+  Meteor.startup(async () => {
+    await CustomFields._collection.createIndexAsync({ modifiedAt: -1 });
+    await CustomFields._collection.createIndexAsync({ boardIds: 1 });
   });
 
   CustomFields.after.insert((userId, doc) => {
@@ -245,14 +242,14 @@ if (Meteor.isServer) {
     }
   });
 
-  CustomFields.before.update((userId, doc, fieldNames, modifier) => {
+  CustomFields.before.update(async (userId, doc, fieldNames, modifier) => {
     if (_.contains(fieldNames, 'boardIds') && modifier.$pull) {
       Cards.update(
         { boardId: modifier.$pull.boardIds, 'customFields._id': doc._id },
         { $pull: { customFields: { _id: doc._id } } },
         { multi: true },
       );
-      customFieldEdit(userId, doc);
+      await customFieldEdit(userId, doc);
       Activities.remove({
         customFieldId: doc._id,
         boardId: modifier.$pull.boardIds,
@@ -299,7 +296,7 @@ if (Meteor.isServer) {
    *                name: string,
    *                type: string}]
    */
-  JsonRoutes.add('GET', '/api/boards/:boardId/custom-fields', function(
+  JsonRoutes.add('GET', '/api/boards/:boardId/custom-fields', async function(
     req,
     res,
   ) {
@@ -307,7 +304,7 @@ if (Meteor.isServer) {
     Authentication.checkBoardAccess(req.userId, paramBoardId);
     JsonRoutes.sendResult(res, {
       code: 200,
-      data: ReactiveCache.getCustomFields({ boardIds: { $in: [paramBoardId] } }).map(
+      data: (await ReactiveCache.getCustomFields({ boardIds: { $in: [paramBoardId] } })).map(
         function(cf) {
           return {
             _id: cf._id,
@@ -331,13 +328,13 @@ if (Meteor.isServer) {
   JsonRoutes.add(
     'GET',
     '/api/boards/:boardId/custom-fields/:customFieldId',
-    function(req, res) {
+    async function(req, res) {
       const paramBoardId = req.params.boardId;
       const paramCustomFieldId = req.params.customFieldId;
       Authentication.checkBoardAccess(req.userId, paramBoardId);
       JsonRoutes.sendResult(res, {
         code: 200,
-        data: ReactiveCache.getCustomField({
+        data: await ReactiveCache.getCustomField({
           _id: paramCustomFieldId,
           boardIds: { $in: [paramBoardId] },
         }),
@@ -359,13 +356,13 @@ if (Meteor.isServer) {
    * @param {boolean} showSumAtTopOfList should the sum of the custom fields be shown at top of list?
    * @return_type {_id: string}
    */
-  JsonRoutes.add('POST', '/api/boards/:boardId/custom-fields', function(
+  JsonRoutes.add('POST', '/api/boards/:boardId/custom-fields', async function(
     req,
     res,
   ) {
     const paramBoardId = req.params.boardId;
     Authentication.checkBoardAccess(req.userId, paramBoardId);
-    const board = ReactiveCache.getBoard(paramBoardId);
+    const board = await ReactiveCache.getBoard(paramBoardId);
     const id = CustomFields.direct.insert({
       name: req.body.name,
       type: req.body.type,
@@ -377,7 +374,7 @@ if (Meteor.isServer) {
       boardIds: [board._id],
     });
 
-    const customField = ReactiveCache.getCustomField({
+    const customField = await ReactiveCache.getCustomField({
       _id: id,
       boardIds: { $in: [paramBoardId] },
     });
@@ -412,52 +409,57 @@ if (Meteor.isServer) {
       const paramFieldId = req.params.customFieldId;
       Authentication.checkBoardAccess(req.userId, paramBoardId);
 
+      const boardScopedField = {
+        _id: paramFieldId,
+        boardIds: { $in: [paramBoardId] },
+      };
+
       if (req.body.hasOwnProperty('name')) {
         CustomFields.direct.update(
-          { _id: paramFieldId },
+          boardScopedField,
           { $set: { name: req.body.name } },
         );
       }
       if (req.body.hasOwnProperty('type')) {
         CustomFields.direct.update(
-          { _id: paramFieldId },
+          boardScopedField,
           { $set: { type: req.body.type } },
         );
       }
       if (req.body.hasOwnProperty('settings')) {
         CustomFields.direct.update(
-          { _id: paramFieldId },
+          boardScopedField,
           { $set: { settings: req.body.settings } },
         );
       }
       if (req.body.hasOwnProperty('showOnCard')) {
         CustomFields.direct.update(
-          { _id: paramFieldId },
+          boardScopedField,
           { $set: { showOnCard: req.body.showOnCard } },
         );
       }
       if (req.body.hasOwnProperty('automaticallyOnCard')) {
         CustomFields.direct.update(
-          { _id: paramFieldId },
+          boardScopedField,
           { $set: { automaticallyOnCard: req.body.automaticallyOnCard } },
         );
       }
       if (req.body.hasOwnProperty('alwaysOnCard')) {
         CustomFields.direct.update(
-          { _id: paramFieldId },
+          boardScopedField,
           { $set: { alwaysOnCard: req.body.alwaysOnCard } },
         );
       }
       if (req.body.hasOwnProperty('showLabelOnMiniCard')) {
         CustomFields.direct.update(
-          { _id: paramFieldId },
+          boardScopedField,
           { $set: { showLabelOnMiniCard: req.body.showLabelOnMiniCard } },
         );
       }
 
       if (req.body.hasOwnProperty('showSumAtTopOfList')) {
         CustomFields.direct.update(
-          { _id: paramFieldId },
+          boardScopedField,
           { $set: { showSumAtTopOfList: req.body.showSumAtTopOfList } },
         );
       }
@@ -489,7 +491,10 @@ if (Meteor.isServer) {
       if (req.body.hasOwnProperty('items')) {
         if (Array.isArray(paramItems)) {
           CustomFields.direct.update(
-            { _id: paramCustomFieldId },
+            {
+              _id: paramCustomFieldId,
+              boardIds: { $in: [paramBoardId] },
+            },
             {
               $push: {
                 'settings.dropdownItems': {
@@ -534,6 +539,7 @@ if (Meteor.isServer) {
         CustomFields.direct.update(
           {
             _id: paramCustomFieldId,
+            boardIds: { $in: [paramBoardId] },
             'settings.dropdownItems._id': paramDropdownItemId,
           },
           {
@@ -566,12 +572,12 @@ if (Meteor.isServer) {
     '/api/boards/:boardId/custom-fields/:customFieldId/dropdown-items/:dropdownItemId',
     (req, res) => {
       const paramBoardId = req.params.boardId;
-      paramCustomFieldId = req.params.customFieldId;
-      paramDropdownItemId = req.params.dropdownItemId;
+      const paramCustomFieldId = req.params.customFieldId;
+      const paramDropdownItemId = req.params.dropdownItemId;
       Authentication.checkBoardAccess(req.userId, paramBoardId);
 
       CustomFields.direct.update(
-        { _id: paramCustomFieldId },
+        { _id: paramCustomFieldId, boardIds: { $in: [paramBoardId] } },
         {
           $pull: {
             'settings.dropdownItems': { _id: paramDropdownItemId },

@@ -1,16 +1,15 @@
 import { ReactiveCache } from '/imports/reactiveCache';
 import { TAPi18n } from '/imports/i18n';
+import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
 Template.headerUserBar.events({
   'click .js-open-header-member-menu': Popup.open('memberMenu'),
   'click .js-change-avatar': Popup.open('changeAvatar'),
 });
 
-BlazeComponent.extendComponent({
-  onCreated() {
-    Meteor.subscribe('setting');
-  },
-}).register('memberMenuPopup');
+Template.memberMenuPopup.onCreated(function () {
+  Meteor.subscribe('setting');
+});
 
 Template.memberMenuPopup.helpers({
   templatesBoardId() {
@@ -30,6 +29,10 @@ Template.memberMenuPopup.helpers({
       // No need to getTemplatesBoardSlug() on public board
       return false;
     }
+  },
+  isSupportPageEnabled() {
+    const setting = ReactiveCache.getCurrentSetting();
+    return setting && setting.supportPageEnabled;
   },
   isSameDomainNameSettingValue(){
     const currSett = ReactiveCache.getCurrentSetting();
@@ -62,6 +65,15 @@ Template.memberMenuPopup.helpers({
 });
 
 Template.memberMenuPopup.events({
+  'click .js-open-bookmarks'(e) {
+    e.preventDefault();
+    if (Utils.isMiniScreen()) {
+      FlowRouter.go('bookmarks');
+      Popup.back();
+    } else {
+      Popup.open('bookmarksPopup')(e);
+    }
+  },
   'click .js-my-cards'() {
     Popup.back();
   },
@@ -78,6 +90,18 @@ Template.memberMenuPopup.events({
   'click .js-change-password': Popup.open('changePassword'),
   'click .js-change-language': Popup.open('changeLanguage'),
   'click .js-support': Popup.open('support'),
+  'click .js-notifications-drawer-toggle'() {
+    Session.set('showNotificationsDrawer', !Session.get('showNotificationsDrawer'));
+  },
+  'click .js-toggle-grey-icons'(event) {
+    event.preventDefault();
+    const currentUser = ReactiveCache.getCurrentUser();
+    if (!currentUser || !Meteor.userId()) return;
+    const current = (currentUser.profile && currentUser.profile.GreyIcons) || false;
+    Meteor.call('toggleGreyIcons', (err) => {
+      if (err && process.env.DEBUG === 'true') console.error('toggleGreyIcons error', err);
+    });
+  },
   'click .js-logout'(event) {
     event.preventDefault();
 
@@ -87,12 +111,6 @@ Template.memberMenuPopup.events({
     Popup.back();
   },
 });
-
-BlazeComponent.extendComponent({
-  onCreated() {
-    Meteor.subscribe('setting');
-  },
-}).register('editProfilePopup');
 
 Template.invitePeoplePopup.events({
   'click a.js-toggle-board-choose'(event){
@@ -142,33 +160,23 @@ Template.invitePeoplePopup.events({
   },
 });
 
+Template.editProfilePopup.onCreated(function() {
+  Meteor.subscribe('setting');
+  this.subscribe('accountSettings');
+});
+
 Template.editProfilePopup.helpers({
   allowEmailChange() {
-    Meteor.call('AccountSettings.allowEmailChange', (_, result) => {
-      if (result) {
-        return true;
-      } else {
-        return false;
-      }
-    });
+    const setting = AccountSettings.findOne('accounts-allowEmailChange');
+    return setting && setting.booleanValue;
   },
   allowUserNameChange() {
-    Meteor.call('AccountSettings.allowUserNameChange', (_, result) => {
-      if (result) {
-        return true;
-      } else {
-        return false;
-      }
-    });
+    const setting = AccountSettings.findOne('accounts-allowUserNameChange');
+    return setting && setting.booleanValue;
   },
   allowUserDelete() {
-    Meteor.call('AccountSettings.allowUserDelete', (_, result) => {
-      if (result) {
-        return true;
-      } else {
-        return false;
-      }
-    });
+    const setting = AccountSettings.findOne('accounts-allowUserDelete');
+    return setting && setting.booleanValue;
   },
 });
 
@@ -241,8 +249,21 @@ Template.editProfilePopup.events({
   },
   'click #deleteButton': Popup.afterConfirm('userDelete', function() {
     Popup.back();
-    Users.remove(Meteor.userId());
-    AccountsTemplates.logout();
+
+    // Use secure server method for self-deletion
+    Meteor.call('removeUser', Meteor.userId(), (error, result) => {
+      if (error) {
+        if (process.env.DEBUG === 'true') {
+          console.error('Error removing user:', error);
+        }
+        alert('Error deleting account: ' + error.reason);
+      } else {
+        if (process.env.DEBUG === 'true') {
+          console.log('User deleted successfully:', result);
+        }
+        AccountsTemplates.logout();
+      }
+    });
   }),
 });
 
@@ -256,7 +277,7 @@ Template.changePasswordPopup.onRendered(function() {
 Template.changeLanguagePopup.helpers({
   languages() {
     return TAPi18n.getSupportedLanguages()
-      .map(({ tag, name }) => ({ tag: tag, name }))
+      .map(({ tag, name, rtl }) => ({ tag, name, rtl }))
       .sort((a, b) => {
         if (a.name === b.name) {
           return 0;
@@ -268,6 +289,30 @@ Template.changeLanguagePopup.helpers({
 
   isCurrentLanguage() {
     return this.tag === TAPi18n.getLanguage();
+  },
+
+  languageFlag() {
+    const flagMap = {
+      'en': '🇺🇸', 'es': '🇪🇸', 'fr': '🇫🇷', 'de': '🇩🇪', 'it': '🇮🇹', 'pt': '🇵🇹', 'ru': '🇷🇺',
+      'ja': '🇯🇵', 'ko': '🇰🇷', 'zh': '🇨🇳', 'ar': '🇸🇦', 'hi': '🇮🇳', 'th': '🇹🇭', 'vi': '🇻🇳',
+      'tr': '🇹🇷', 'pl': '🇵🇱', 'nl': '🇳🇱', 'sv': '🇸🇪', 'da': '🇩🇰', 'no': '🇳🇴', 'fi': '🇫🇮',
+      'cs': '🇨🇿', 'hu': '🇭🇺', 'ro': '🇷🇴', 'bg': '🇧🇬', 'hr': '🇭🇷', 'sk': '🇸🇰', 'sl': '🇸🇮',
+      'et': '🇪🇪', 'lv': '🇱🇻', 'lt': '🇱🇹', 'el': '🇬🇷', 'he': '🇮🇱', 'uk': '🇺🇦', 'be': '🇧🇾',
+      'ca': '🇪🇸', 'eu': '🇪🇸', 'gl': '🇪🇸', 'cy': '🇬🇧', 'ga': '🇮🇪', 'mt': '🇲🇹', 'is': '🇮🇸',
+      'mk': '🇲🇰', 'sq': '🇦🇱', 'sr': '🇷🇸', 'bs': '🇧🇦', 'me': '🇲🇪', 'fa': '🇮🇷', 'ur': '🇵🇰',
+      'bn': '🇧🇩', 'ta': '🇮🇳', 'te': '🇮🇳', 'ml': '🇮🇳', 'kn': '🇮🇳', 'gu': '🇮🇳', 'pa': '🇮🇳',
+      'or': '🇮🇳', 'as': '🇮🇳', 'ne': '🇳🇵', 'si': '🇱🇰', 'my': '🇲🇲', 'km': '🇰🇭', 'lo': '🇱🇦',
+      'ka': '🇬🇪', 'hy': '🇦🇲', 'az': '🇦🇿', 'kk': '🇰🇿', 'ky': '🇰🇬', 'uz': '🇺🇿', 'mn': '🇲🇳',
+      'bo': '🇨🇳', 'dz': '🇧🇹', 'ug': '🇨🇳', 'ii': '🇨🇳', 'za': '🇨🇳', 'yue': '🇭🇰', 'zh-HK': '🇭🇰',
+      'zh-TW': '🇹🇼', 'zh-CN': '🇨🇳', 'id': '🇮🇩', 'ms': '🇲🇾', 'tl': '🇵🇭', 'ceb': '🇵🇭',
+      'haw': '🇺🇸', 'mi': '🇳🇿', 'sm': '🇼🇸', 'to': '🇹🇴', 'fj': '🇫🇯', 'ty': '🇵🇫', 'mg': '🇲🇬',
+      'sw': '🇹🇿', 'am': '🇪🇹', 'om': '🇪🇹', 'so': '🇸🇴', 'ti': '🇪🇷', 'ha': '🇳🇬', 'yo': '🇳🇬',
+      'ig': '🇳🇬', 'zu': '🇿🇦', 'xh': '🇿🇦', 'af': '🇿🇦', 'st': '🇿🇦', 'tn': '🇿🇦', 'ss': '🇿🇦',
+      've': '🇿🇦', 'ts': '🇿🇦', 'nr': '🇿🇦', 'nso': '🇿🇦', 'wo': '🇸🇳', 'ff': '🇸🇳', 'dy': '🇲🇱',
+      'bm': '🇲🇱', 'tw': '🇬🇭', 'ak': '🇬🇭', 'lg': '🇺🇬', 'rw': '🇷🇼', 'rn': '🇧🇮', 'ny': '🇲🇼',
+      'sn': '🇿🇼', 'nd': '🇿🇼'
+    };
+    return flagMap[this.tag] || '🌐';
   },
 });
 

@@ -7,23 +7,53 @@ import Team from '/models/team';
 
 Template.userAvatar.helpers({
   userData() {
-    return ReactiveCache.getUser(this.userId, {
+    const user = ReactiveCache.getUser(this.userId, {
       fields: {
         profile: 1,
         username: 1,
       },
     });
+    return user;
+  },
+
+  avatarUrl() {
+    const user = ReactiveCache.getUser(this.userId, { fields: { profile: 1 } });
+    const base = (user && user.profile && user.profile.avatarUrl) || '';
+    if (!base) return '';
+    // Append current boardId when available so public viewers can access avatars on public boards
+    try {
+      const boardId = Utils.getCurrentBoardId && Utils.getCurrentBoardId();
+      if (boardId) {
+        const sep = base.includes('?') ? '&' : '?';
+        return `${base}${sep}boardId=${encodeURIComponent(boardId)}`;
+      }
+    } catch (_) {}
+    return base;
   },
 
   memberType() {
     const user = ReactiveCache.getUser(this.userId);
-    return user && user.isBoardAdmin() ? 'admin' : 'normal';
+    if (!user) return '';
+
+    const board = Utils.getCurrentBoard();
+    if (!board) return '';
+
+    // Return role in priority order: Admin, Normal, NormalAssignedOnly, NoComments, CommentOnly, CommentAssignedOnly, Worker, ReadOnly, ReadAssignedOnly
+    if (user.isBoardAdmin()) return 'admin';
+    if (board.hasReadAssignedOnly(user._id)) return 'read-assigned-only';
+    if (board.hasReadOnly(user._id)) return 'read-only';
+    if (board.hasWorker(user._id)) return 'worker';
+    if (board.hasCommentAssignedOnly(user._id)) return 'comment-assigned-only';
+    if (board.hasCommentOnly(user._id)) return 'comment-only';
+    if (board.hasNoComments(user._id)) return 'no-comments';
+    if (board.hasNormalAssignedOnly(user._id)) return 'normal-assigned-only';
+    return 'normal';
   },
 
 /*
   presenceStatusClassName() {
     const user = ReactiveCache.getUser(this.userId);
-    const userPresence = presences.findOne({ userId: this.userId });
+    const userPresence = Presences.findOne({ userId: this.userId });
     if (user && user.isInvitedTo(Session.get('currentBoard'))) return 'pending';
     else if (!userPresence) return 'disconnected';
     else if (Session.equals('currentBoard', userPresence.state.currentBoardId))
@@ -46,51 +76,36 @@ Template.userAvatarInitials.helpers({
   },
 });
 
-BlazeComponent.extendComponent({
-  onCreated() {
-    this.error = new ReactiveVar('');
-    this.loading = new ReactiveVar(false);
-    this.findOrgsOptions = new ReactiveVar({});
+Template.boardOrgRow.onCreated(function () {
+  this.error = new ReactiveVar('');
+  this.loading = new ReactiveVar(false);
+  this.findOrgsOptions = new ReactiveVar({});
 
-    this.page = new ReactiveVar(1);
-    this.autorun(() => {
-      const limitOrgs = this.page.get() * Number.MAX_SAFE_INTEGER;
-      this.subscribe('org', this.findOrgsOptions.get(), limitOrgs, () => {});
-    });
-  },
+  this.page = new ReactiveVar(1);
+  this.autorun(() => {
+    const limitOrgs = this.page.get() * Number.MAX_SAFE_INTEGER;
+    this.subscribe('org', this.findOrgsOptions.get(), limitOrgs, () => {});
+  });
+});
 
-  onRendered() {
-    this.setLoading(false);
-  },
-
-  setError(error) {
-    this.error.set(error);
-  },
-
-  setLoading(w) {
-    this.loading.set(w);
-  },
-
-  isLoading() {
-    return this.loading.get();
-  },
-
-  events() {
-    return [
-      {
-        'keyup input'() {
-          this.setError('');
-        },
-        'click .js-manage-board-removeOrg': Popup.open('removeBoardOrg'),
-      },
-    ];
-  },
-}).register('boardOrgRow');
+Template.boardOrgRow.onRendered(function () {
+  this.loading.set(false);
+});
 
 Template.boardOrgRow.helpers({
+  isLoading() {
+    return Template.instance().loading.get();
+  },
   orgData() {
     return ReactiveCache.getOrg(this.orgId);
   },
+});
+
+Template.boardOrgRow.events({
+  'keyup input'(event, tpl) {
+    tpl.error.set('');
+  },
+  'click .js-manage-board-removeOrg': Popup.open('removeBoardOrg'),
 });
 
 Template.boardOrgName.helpers({
@@ -105,51 +120,36 @@ Template.boardOrgName.helpers({
   },
 });
 
-BlazeComponent.extendComponent({
-  onCreated() {
-    this.error = new ReactiveVar('');
-    this.loading = new ReactiveVar(false);
-    this.findOrgsOptions = new ReactiveVar({});
+Template.boardTeamRow.onCreated(function () {
+  this.error = new ReactiveVar('');
+  this.loading = new ReactiveVar(false);
+  this.findOrgsOptions = new ReactiveVar({});
 
-    this.page = new ReactiveVar(1);
-    this.autorun(() => {
-      const limitTeams = this.page.get() * Number.MAX_SAFE_INTEGER;
-      this.subscribe('team', this.findOrgsOptions.get(), limitTeams, () => {});
-    });
-  },
+  this.page = new ReactiveVar(1);
+  this.autorun(() => {
+    const limitTeams = this.page.get() * Number.MAX_SAFE_INTEGER;
+    this.subscribe('team', this.findOrgsOptions.get(), limitTeams, () => {});
+  });
+});
 
-  onRendered() {
-    this.setLoading(false);
-  },
-
-  setError(error) {
-    this.error.set(error);
-  },
-
-  setLoading(w) {
-    this.loading.set(w);
-  },
-
-  isLoading() {
-    return this.loading.get();
-  },
-
-  events() {
-    return [
-      {
-        'keyup input'() {
-          this.setError('');
-        },
-        'click .js-manage-board-removeTeam': Popup.open('removeBoardTeam'),
-      },
-    ];
-  },
-}).register('boardTeamRow');
+Template.boardTeamRow.onRendered(function () {
+  this.loading.set(false);
+});
 
 Template.boardTeamRow.helpers({
+  isLoading() {
+    return Template.instance().loading.get();
+  },
   teamData() {
     return ReactiveCache.getTeam(this.teamId);
   },
+});
+
+Template.boardTeamRow.events({
+  'keyup input'(event, tpl) {
+    tpl.error.set('');
+  },
+  'click .js-manage-board-removeTeam': Popup.open('removeBoardTeam'),
 });
 
 Template.boardTeamName.helpers({
@@ -164,97 +164,78 @@ Template.boardTeamName.helpers({
   },
 });
 
-BlazeComponent.extendComponent({
-  onCreated() {
-    this.error = new ReactiveVar('');
+Template.changeAvatarPopup.onCreated(function () {
+  this.error = new ReactiveVar('');
+  Meteor.subscribe('my-avatars');
+});
 
-    Meteor.subscribe('my-avatars');
+Template.changeAvatarPopup.helpers({
+  error() {
+    return Template.instance().error;
   },
-
   uploadedAvatars() {
-    const ret = ReactiveCache.getAvatars({ userId: Meteor.userId() }, {}, true).each();
+    const ret = ReactiveCache.getAvatars({ userId: Meteor.userId() }, {}, true);
     return ret;
   },
-
   isSelected() {
     const userProfile = ReactiveCache.getCurrentUser().profile;
     const avatarUrl = userProfile && userProfile.avatarUrl;
-    const currentAvatarUrl = `${this.currentData().link()}?auth=false&brokenIsFine=true`;
+    const currentAvatarUrl = Template.currentData().link();
     return avatarUrl === currentAvatarUrl;
   },
-
   noAvatarUrl() {
     const userProfile = ReactiveCache.getCurrentUser().profile;
     const avatarUrl = userProfile && userProfile.avatarUrl;
     return !avatarUrl;
   },
-
-  setAvatar(avatarUrl) {
-    ReactiveCache.getCurrentUser().setAvatarUrl(avatarUrl);
-  },
-
-  setError(error) {
-    this.error.set(error);
-  },
-
-  events() {
-    return [
-      {
-        'click .js-upload-avatar'() {
-          this.$('.js-upload-avatar-input').click();
-        },
-        'change .js-upload-avatar-input'(event) {
-          const self = this;
-          if (event.currentTarget.files && event.currentTarget.files[0]) {
-            const uploader = Avatars.insert(
-              {
-                file: event.currentTarget.files[0],
-                chunkSize: 'dynamic',
-              },
-              false,
-            );
-            uploader.on('error', (error, fileData) => {
-              self.setError(error.reason);
-            });
-            uploader.start();
-          }
-        },
-        'click .js-select-avatar'() {
-          const avatarUrl = `${this.currentData().link()}?auth=false&brokenIsFine=true`;
-          this.setAvatar(avatarUrl);
-        },
-        'click .js-select-initials'() {
-          this.setAvatar('');
-        },
-        'click .js-delete-avatar'(event) {
-          Avatars.remove(this.currentData()._id);
-          event.stopPropagation();
-        },
-      },
-    ];
-  },
-}).register('changeAvatarPopup');
-
-Template.cardMembersPopup.helpers({
-  isCardMember() {
-    const card = Template.parentData();
-    const cardMembers = card.getMembers();
-
-    return _.contains(cardMembers, this.userId);
-  },
-
-  user() {
-    return ReactiveCache.getUser(this.userId);
-  },
 });
 
-Template.cardMembersPopup.events({
-  'click .js-select-member'(event) {
-    const card = Utils.getCurrentCard();
-    const memberId = this.userId;
-    card.toggleMember(memberId);
-    event.preventDefault();
+function changeAvatarSetAvatar(tpl, avatarUrl) {
+  Meteor.call('setAvatarUrl', avatarUrl, (err) => {
+    if (err) {
+      tpl.error.set(err.reason || 'Error setting avatar');
+    }
+  });
+}
+
+Template.changeAvatarPopup.events({
+  'click .js-upload-avatar'(event, tpl) {
+    tpl.$('.js-upload-avatar-input').click();
   },
+  'change .js-upload-avatar-input'(event, tpl) {
+    if (event.currentTarget.files && event.currentTarget.files[0]) {
+      const uploader = Avatars.insert(
+        {
+          file: event.currentTarget.files[0],
+          chunkSize: 'dynamic',
+        },
+        false,
+      );
+      uploader.on('error', (error, fileData) => {
+        tpl.error.set(error.reason);
+      });
+      uploader.start();
+    }
+  },
+  'click .js-select-avatar'(event, tpl) {
+    event.preventDefault();
+    event.stopPropagation();
+    const data = Blaze.getData(event.currentTarget);
+    if (data && typeof data.link === 'function') {
+      const avatarUrl = data.link();
+      changeAvatarSetAvatar(tpl, avatarUrl);
+    }
+  },
+  'click .js-select-initials'(event, tpl) {
+    event.preventDefault();
+    event.stopPropagation();
+    changeAvatarSetAvatar(tpl, '');
+  },
+  'click .js-delete-avatar': Popup.afterConfirm('deleteAvatar', function (event) {
+    Avatars.remove(this._id);
+    Popup.back();
+    event.stopPropagation();
+  }),
 });
 
 Template.cardMemberPopup.helpers({

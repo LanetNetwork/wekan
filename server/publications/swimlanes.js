@@ -1,12 +1,12 @@
 import { ReactiveCache } from '/imports/reactiveCache';
 
 Meteor.methods({
-  copySwimlane(swimlaneId, toBoardId) {
+  async copySwimlane(swimlaneId, toBoardId) {
     check(swimlaneId, String);
     check(toBoardId, String);
 
-    const swimlane = ReactiveCache.getSwimlane(swimlaneId);
-    const toBoard = ReactiveCache.getBoard(toBoardId);
+    const swimlane = await ReactiveCache.getSwimlane(swimlaneId);
+    const toBoard = await ReactiveCache.getBoard(toBoardId);
 
     let ret = false;
     if (swimlane && toBoard) {
@@ -17,16 +17,16 @@ Meteor.methods({
     return ret;
   },
 
-  moveSwimlane(swimlaneId, toBoardId) {
+  async moveSwimlane(swimlaneId, toBoardId) {
     check(swimlaneId, String);
     check(toBoardId, String);
 
-    const swimlane = ReactiveCache.getSwimlane(swimlaneId);
-    const toBoard = ReactiveCache.getBoard(toBoardId);
+    const swimlane = await ReactiveCache.getSwimlane(swimlaneId);
+    const toBoard = await ReactiveCache.getBoard(toBoardId);
 
     let ret = false;
     if (swimlane && toBoard) {
-      swimlane.move(toBoardId);
+      await swimlane.move(toBoardId);
 
       ret = true;
     }

@@ -1,20 +1,20 @@
 [Sandstorm](Sandstorm) - [Sandstorm Backup](Export-from-Wekan-Sandstorm-grain-.zip-file)
 
-# Upcoming
+# Related
 
-[Transferring to Minio and SQLite](https://github.com/wekan/minio-metadata)
+[Transferring attachments from MongoDB to filesystem, and text from MongoDB to SQLite](https://github.com/wekan/minio-metadata)
 
 # Backup Docker
 
 [Also see: Upgrading Synology with Wekan quay images](https://github.com/wekan/wekan/issues/3874#issuecomment-867526249)
 
-Note: Do not run `docker-compose down` without verifying your docker-compose file, it does not delete the data by default but caution is advised. Refer to https://docs.docker.com/compose/reference/down/.
+Note: Do not run `docker compose down` because it could delete data. https://docs.docker.com/compose/reference/down/
 
 [docker-compose.yml](https://raw.githubusercontent.com/wekan/wekan/master/docker-compose.yml)
 
 This presumes your Wekan Docker is currently running with:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 Backup to directory dump:
 ```bash
@@ -36,23 +36,20 @@ docker start wekan-app
 ```
 # Upgrade Docker Wekan version
 
-## Newest info
+1. Check that you use newest [docker-compose.yml](https://raw.githubusercontent.com/wekan/wekan/refs/heads/main/docker-compose.yml)
+   that has for example: `image: ghcr.io/wekan/wekan:latest` . If you have old docker-compose.yml, copy it's settings like ROOT_URL to newest docker-compose.yml.
 
-https://github.com/wekan/wekan/discussions/5367
-
-## Old info
-
-Note: Do not run `docker-compose down` without verifying your docker-compose file, it does not delete the data by default but caution is advised. Refer to https://docs.docker.com/compose/reference/down/.
 ```bash
-docker-compose stop
+docker compose stop
 docker rm wekan-app
+docker compose up -d
 ```
-a) For example, if you in docker-compose.yml use `image: wekanteam/wekan` or `image: quay.io/wekan/wekan` for latest development version
+2. If you are migrating from Snap to Docker, if there is files at `/var/snap/wekan/common/files` , copy that directory to be at
+   docker-compose.yml setting path, for example `export WRITABLE_PATH=/data` , copy files directory to be at `/data/files`
+   with same user:group directory recursive permissions that directory data has, for example: `sudo chown -R user:group data`
 
-b) Or in docker-compose.yml change version tag, or use version tag like `image: wekanteam/wekan:v5.50` or `image: quay.io/wekan/wekan:v5.50`
-```bash
-docker-compose up -d
-```
+3. When you open board, if cards or attachments are not visible, click right sidebar / Board Settings / Migrations.
+   From there, run most migrations, but not migration about `Restore all from archive`, because it would unarchive cards etc from archive.
 
 # Backup Wekan Snap to directory dump
 ```bash
@@ -89,6 +86,73 @@ mongorestore --drop --port 27019
 sudo snap start wekan.wekan
 ./snap-settings.sh
 ```
+
+# Upgrade WeKan Snap Stable 6.x to newest WeKan Snap Candidate
+
+1. Check that you have enough disk space: `df -h` . Also check size of your data: `sudo du -sh /var/snap/wekan/common` .
+2. [Backup Snap](#backup-wekan-snap-to-directory-dump)
+3. Move WeKan database common directory content elsewhere:
+```
+sudo su
+snap stop wekan
+mkdir /root/common
+mv /var/snap/wekan/common/* /root/common/
+```
+4. Change Snap Stable to Snap Candidate:
+```
+sudo snap refresh wekan --channel=latest/candidate --amend
+```
+5. [Restore Snap](#restore-wekan-snap)
+6. Copy back files directory, if it is there: `sudo cp -pR /root/common/files /var/snap/wekan/common/`
+7. If you use [Caddy](https://github.com/wekan/wekan/blob/main/docs/Webserver/Caddy.md), that is included in WeKan, edit /var/snap/wekan/Caddyfile to new syntax:
+```
+wekan.yourcompany.com {
+        tls {
+                load /etc/caddy/certs
+                alpn http/1.1
+        }
+        reverse_proxy 127.0.0.1:2000
+}
+```
+This is if you have WeKan Node.js running at port 2000, for example with these settings:
+```
+sudo snap set wekan root-url='https://wekan.yourcompany.com'
+sudo snap set wekan port='2000'
+sudo snap set wekan caddy-enabled='true'
+sudo snap enable wekan
+sudo snap start wekan
+```
+You can check is caddy, wekan and mongodb running with:
+```
+sudo snap services
+```
+If you need to disable WeKan included Caddy, because you have system-wide installed Caddy or other webserver:
+```
+sudo snap stop wekan.caddy
+sudo systemctl disable snap.wekan.caddy
+sudo systemctl stop snap.wekan.caddy
+```
+7. When you open board, if cards or attachments are not visible, click right sidebar / Board Settings / Migrations.
+From there, run most migrations, but not migration about `Restore all from archive`, because it would unarchive cards etc from archive.
+
+# If upgrade did not work, going back to WeKan Snap Stable 6.09
+
+This is only if you have old 6.09 common directory at /root/common .
+
+```
+sudo su
+mkdir /root/common-newest
+snap stop wekan
+mv /var/snap/wekan/common/* /root/common-newest/
+snap start wekan
+snap refresh wekan --channel=latest/stable --amend
+snap stop wekan
+rm -rf /var/snap/wekan/common/*
+mv /root/common/* /var/snap/wekan/common/
+snap start wekan
+./snap-settings.sh
+```
+
 # Upgrade Snap manually immediately (usually it updates automatically)
 
 ```bash
@@ -137,11 +201,11 @@ https://nosqlbooster.com/downloads
 
 ### At server where Wekan Snap is installed, MongoDB is running at localhost port 27019
 
-<img src="https://wekan.github.io/nosqlbooster-basic-connection.png" width="60%" alt="Wekan logo" />
+<img src="nosqlbooster-basic-connection.png" width="60%" alt="NoSQLBooster basic connection" />
 
 ### You can tunnel via SSH to server, using password auth or private key auth dropdown selection
 
-<img src="https://wekan.github.io/nosqlbooster-ssh-tunnel.png" width="60%" alt="Wekan logo" />
+<img src="nosqlbooster-ssh-tunnel.png" width="60%" alt="NoSQLBooster SSH tunnel" />
 
 # Scheduled backups to local or remote server
 

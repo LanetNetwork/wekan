@@ -1,7 +1,27 @@
 import { ReactiveCache } from '/imports/reactiveCache';
-import moment from 'moment/min/moment-with-locales';
 const Papa = require('papaparse');
 import { TAPi18n } from '/imports/i18n';
+import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
+import { 
+  formatDateTime, 
+  formatDate, 
+  formatTime, 
+  getISOWeek, 
+  isValidDate, 
+  isBefore, 
+  isAfter, 
+  isSame, 
+  add, 
+  subtract, 
+  startOf, 
+  endOf, 
+  format, 
+  parseDate, 
+  now, 
+  createDate, 
+  fromNow, 
+  calendar 
+} from '/imports/lib/dateUtils';
 
 //const stringify = require('csv-stringify');
 
@@ -14,7 +34,7 @@ export class Exporter {
     this._attachmentId = attachmentId;
   }
 
-  build() {
+  async build() {
     const fs = Npm.require('fs');
     const os = Npm.require('os');
     const path = Npm.require('path');
@@ -35,7 +55,7 @@ export class Exporter {
     };
     _.extend(
       result,
-      ReactiveCache.getBoard(this._boardId, {
+      await ReactiveCache.getBoard(this._boardId, {
         fields: {
           stars: 0,
         },
@@ -77,7 +97,7 @@ export class Exporter {
     const byBoardAndAttachment = this._attachmentId
       ? { boardId: this._boardId, _id: this._attachmentId }
       : byBoard;
-    result.attachments = ReactiveCache.getAttachments(byBoardAndAttachment)
+    result.attachments = (await ReactiveCache.getAttachments(byBoardAndAttachment))
       .map((attachment) => {
         let filebase64 = null;
         filebase64 = getBase64DataSync(attachment);
@@ -96,41 +116,41 @@ export class Exporter {
       return result.attachments.length > 0 ? result.attachments[0] : {};
     }
 
-    result.lists = ReactiveCache.getLists(byBoard, noBoardId);
-    result.cards = ReactiveCache.getCards(byBoardNoLinked, noBoardId);
-    result.swimlanes = ReactiveCache.getSwimlanes(byBoard, noBoardId);
-    result.customFields = ReactiveCache.getCustomFields(
+    result.lists = await ReactiveCache.getLists(byBoard, noBoardId);
+    result.cards = await ReactiveCache.getCards(byBoardNoLinked, noBoardId);
+    result.swimlanes = await ReactiveCache.getSwimlanes(byBoard, noBoardId);
+    result.customFields = await ReactiveCache.getCustomFields(
       { boardIds: this._boardId },
       { fields: { boardIds: 0 } },
     );
-    result.comments = ReactiveCache.getCardComments(byBoard, noBoardId);
-    result.activities = ReactiveCache.getActivities(byBoard, noBoardId);
-    result.rules = ReactiveCache.getRules(byBoard, noBoardId);
+    result.comments = await ReactiveCache.getCardComments(byBoard, noBoardId);
+    result.activities = await ReactiveCache.getActivities(byBoard, noBoardId);
+    result.rules = await ReactiveCache.getRules(byBoard, noBoardId);
     result.checklists = [];
     result.checklistItems = [];
     result.subtaskItems = [];
     result.triggers = [];
     result.actions = [];
-    result.cards.forEach((card) => {
+    for (const card of result.cards) {
       result.checklists.push(
-        ...ReactiveCache.getChecklists({
+        ...await ReactiveCache.getChecklists({
           cardId: card._id,
         }),
       );
       result.checklistItems.push(
-        ...ReactiveCache.getChecklistItems({
+        ...await ReactiveCache.getChecklistItems({
           cardId: card._id,
         }),
       );
       result.subtaskItems.push(
-        ...ReactiveCache.getCards({
+        ...await ReactiveCache.getCards({
           parentId: card._id,
         }),
       );
-    });
-    result.rules.forEach((rule) => {
+    }
+    for (const rule of result.rules) {
       result.triggers.push(
-        ...ReactiveCache.getTriggers(
+        ...await ReactiveCache.getTriggers(
           {
             _id: rule.triggerId,
           },
@@ -138,14 +158,14 @@ export class Exporter {
         ),
       );
       result.actions.push(
-        ...ReactiveCache.getActions(
+        ...await ReactiveCache.getActions(
           {
             _id: rule.actionId,
           },
           noBoardId,
         ),
       );
-    });
+    }
 
     // we also have to export some user data - as the other elements only
     // include id but we have to be careful:
@@ -191,7 +211,7 @@ export class Exporter {
         'profile.avatarUrl': 1,
       },
     };
-    result.users = ReactiveCache.getUsers(byUserIds, userFields)
+    result.users = (await ReactiveCache.getUsers(byUserIds, userFields))
       .map((user) => {
         // user avatar is stored as a relative url, we export absolute
         if ((user.profile || {}).avatarUrl) {
@@ -202,8 +222,8 @@ export class Exporter {
     return result;
   }
 
-  buildCsv(userDelimiter = ',', userLanguage='en') {
-    const result = this.build();
+  async buildCsv(userDelimiter = ',', userLanguage='en') {
+    const result = await this.build();
     const columnHeaders = [];
     const cardRows = [];
 
@@ -302,15 +322,15 @@ export class Exporter {
         labels = `${labels + label.name}-${label.color} `;
       });
       currentRow.push(labels.trim());
-      currentRow.push(card.startAt ? moment(card.startAt).format() : ' ');
-      currentRow.push(card.dueAt ? moment(card.dueAt).format() : ' ');
-      currentRow.push(card.endAt ? moment(card.endAt).format() : ' ');
+      currentRow.push(card.startAt ? new Date(card.startAt).toISOString() : ' ');
+      currentRow.push(card.dueAt ? new Date(card.dueAt).toISOString() : ' ');
+      currentRow.push(card.endAt ? new Date(card.endAt).toISOString() : ' ');
       currentRow.push(card.isOvertime ? 'true' : 'false');
       currentRow.push(card.spentTime);
-      currentRow.push(card.createdAt ? moment(card.createdAt).format() : ' ');
-      currentRow.push(card.modifiedAt ? moment(card.modifiedAt).format() : ' ');
+      currentRow.push(card.createdAt ? new Date(card.createdAt).toISOString() : ' ');
+      currentRow.push(card.modifiedAt ? new Date(card.modifiedAt).toISOString() : ' ');
       currentRow.push(
-        card.dateLastActivity ? moment(card.dateLastActivity).format() : ' ',
+        card.dateLastActivity ? new Date(card.dateLastActivity).toISOString() : ' ',
       );
       if (card.vote && card.vote.question !== '') {
         let positiveVoters = '';
@@ -343,7 +363,7 @@ export class Exporter {
         if (field.value !== null) {
           if (customFieldMap[field._id].type === 'date') {
             customFieldValuesToPush[customFieldMap[field._id].position] =
-              moment(field.value).format();
+              new Date(field.value).toISOString();
           } else if (customFieldMap[field._id].type === 'dropdown') {
             const dropdownOptions = result.customFields.find(
               ({ _id }) => _id === field._id,
@@ -378,8 +398,8 @@ export class Exporter {
     return Papa.unparse(cardRows, papaconfig);
   }
 
-  canExport(user) {
-    const board = ReactiveCache.getBoard(this._boardId);
+  async canExport(user) {
+    const board = await ReactiveCache.getBoard(this._boardId);
     return board && board.isVisibleBy(user);
   }
 }

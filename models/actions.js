@@ -5,13 +5,13 @@ Actions = new Mongo.Collection('actions');
 
 Actions.allow({
   insert(userId, doc) {
-    return allowIsBoardAdmin(userId, ReactiveCache.getBoard(doc.boardId));
+    return allowIsBoardAdmin(userId, Boards.findOne(doc.boardId));
   },
   update(userId, doc) {
-    return allowIsBoardAdmin(userId, ReactiveCache.getBoard(doc.boardId));
+    return allowIsBoardAdmin(userId, Boards.findOne(doc.boardId));
   },
   remove(userId, doc) {
-    return allowIsBoardAdmin(userId, ReactiveCache.getBoard(doc.boardId));
+    return allowIsBoardAdmin(userId, Boards.findOne(doc.boardId));
   },
 });
 
@@ -32,8 +32,8 @@ Actions.helpers({
 });
 
 if (Meteor.isServer) {
-  Meteor.startup(() => {
-    Actions._collection.createIndex({ modifiedAt: -1 });
+  Meteor.startup(async () => {
+    await Actions._collection.createIndexAsync({ modifiedAt: -1 });
   });
 }
 

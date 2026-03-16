@@ -27,25 +27,55 @@ if (Meteor.isServer) {
    * @param {string} boardId the ID of the board we are exporting
    * @param {string} authToken the loginToken
    */
-  JsonRoutes.add('get', '/api/boards/:boardId/export', function (req, res) {
+  JsonRoutes.add('get', '/api/boards/:boardId/export', async function (req, res) {
     const boardId = req.params.boardId;
     let user = null;
     let impersonateDone = false;
     let adminId = null;
+
+    // First check if board exists and is public to avoid unnecessary authentication
+    const board = await ReactiveCache.getBoard(boardId);
+    if (!board) {
+      JsonRoutes.sendResult(res, 404);
+      return;
+    }
+
+    // If board is public, skip expensive authentication operations
+    if (board.isPublic()) {
+      // Public boards don't require authentication - skip hash operations
+      const exporter = new Exporter(boardId);
+      JsonRoutes.sendResult(res, {
+        code: 200,
+        data: await exporter.build(),
+      });
+      return;
+    }
+
+    // Only perform expensive authentication for private boards
     const loginToken = req.query.authToken;
     if (loginToken) {
+      // Validate token length to prevent resource abuse
+      if (loginToken.length > 10000) {
+        if (process.env.DEBUG === 'true') {
+          console.warn('Suspiciously long auth token received, rejecting to prevent resource abuse');
+        }
+        JsonRoutes.sendResult(res, 400);
+        return;
+      }
+
       const hashToken = Accounts._hashLoginToken(loginToken);
-      user = ReactiveCache.getUser({
+      user = await ReactiveCache.getUser({
         'services.resume.loginTokens.hashedToken': hashToken,
       });
       adminId = user._id.toString();
-      impersonateDone = ReactiveCache.getImpersonatedUser({ adminId: adminId });
+      impersonateDone = await ReactiveCache.getImpersonatedUser({ adminId: adminId });
     } else if (!Meteor.settings.public.sandstorm) {
       Authentication.checkUserId(req.userId);
-      user = ReactiveCache.getUser({ _id: req.userId, isAdmin: true });
+      user = await ReactiveCache.getUser({ _id: req.userId, isAdmin: true });
     }
+
     const exporter = new Exporter(boardId);
-    if (exporter.canExport(user) || impersonateDone) {
+    if (await exporter.canExport(user) || impersonateDone) {
       if (impersonateDone) {
         ImpersonatedUsers.insert({
           adminId: adminId,
@@ -56,7 +86,7 @@ if (Meteor.isServer) {
 
       JsonRoutes.sendResult(res, {
         code: 200,
-        data: exporter.build(),
+        data: await exporter.build(),
       });
     } else {
       // we could send an explicit error message, but on the other hand the only
@@ -88,26 +118,56 @@ if (Meteor.isServer) {
   JsonRoutes.add(
     'get',
     '/api/boards/:boardId/attachments/:attachmentId/export',
-    function (req, res) {
+    async function (req, res) {
       const boardId = req.params.boardId;
       const attachmentId = req.params.attachmentId;
       let user = null;
       let impersonateDone = false;
       let adminId = null;
+
+      // First check if board exists and is public to avoid unnecessary authentication
+      const board = await ReactiveCache.getBoard(boardId);
+      if (!board) {
+        JsonRoutes.sendResult(res, 404);
+        return;
+      }
+
+      // If board is public, skip expensive authentication operations
+      if (board.isPublic()) {
+        // Public boards don't require authentication - skip hash operations
+        const exporter = new Exporter(boardId, attachmentId);
+        JsonRoutes.sendResult(res, {
+          code: 200,
+          data: await exporter.build(),
+        });
+        return;
+      }
+
+      // Only perform expensive authentication for private boards
       const loginToken = req.query.authToken;
       if (loginToken) {
+        // Validate token length to prevent resource abuse
+        if (loginToken.length > 10000) {
+          if (process.env.DEBUG === 'true') {
+            console.warn('Suspiciously long auth token received, rejecting to prevent resource abuse');
+          }
+          JsonRoutes.sendResult(res, 400);
+          return;
+        }
+
         const hashToken = Accounts._hashLoginToken(loginToken);
-        user = ReactiveCache.getUser({
+        user = await ReactiveCache.getUser({
           'services.resume.loginTokens.hashedToken': hashToken,
         });
         adminId = user._id.toString();
-        impersonateDone = ReactiveCache.getImpersonatedUser({ adminId: adminId });
+        impersonateDone = await ReactiveCache.getImpersonatedUser({ adminId: adminId });
       } else if (!Meteor.settings.public.sandstorm) {
         Authentication.checkUserId(req.userId);
-        user = ReactiveCache.getUser({ _id: req.userId, isAdmin: true });
+        user = await ReactiveCache.getUser({ _id: req.userId, isAdmin: true });
       }
+
       const exporter = new Exporter(boardId, attachmentId);
-      if (exporter.canExport(user) || impersonateDone) {
+      if (await exporter.canExport(user) || impersonateDone) {
         if (impersonateDone) {
           ImpersonatedUsers.insert({
             adminId: adminId,
@@ -118,7 +178,7 @@ if (Meteor.isServer) {
         }
         JsonRoutes.sendResult(res, {
           code: 200,
-          data: exporter.build(),
+          data: await exporter.build(),
         });
       } else {
         // we could send an explicit error message, but on the other hand the only
@@ -143,45 +203,25 @@ if (Meteor.isServer) {
    * @param {string} authToken the loginToken
    * @param {string} delimiter delimiter to use while building export. Default is comma ','
    */
-  Picker.route('/api/boards/:boardId/export/csv', function (params, req, res) {
+  Picker.route('/api/boards/:boardId/export/csv', async function (params, req, res) {
     const boardId = params.boardId;
     let user = null;
     let impersonateDone = false;
     let adminId = null;
-    const loginToken = params.query.authToken;
-    if (loginToken) {
-      const hashToken = Accounts._hashLoginToken(loginToken);
-      user = ReactiveCache.getUser({
-        'services.resume.loginTokens.hashedToken': hashToken,
-      });
-      adminId = user._id.toString();
-      impersonateDone = ReactiveCache.getImpersonatedUser({ adminId: adminId });
-    } else if (!Meteor.settings.public.sandstorm) {
-      Authentication.checkUserId(req.userId);
-      user = ReactiveCache.getUser({
-        _id: req.userId,
-        isAdmin: true,
-      });
+
+    // First check if board exists and is public to avoid unnecessary authentication
+    const board = await ReactiveCache.getBoard(boardId);
+    if (!board) {
+      res.writeHead(404);
+      res.end('Board not found');
+      return;
     }
-    const exporter = new Exporter(boardId);
-    if (exporter.canExport(user) || impersonateDone) {
-      if (impersonateDone) {
-        let exportType = 'exportCSV';
-        if( params.query.delimiter == "\t" ) {
-          exportType = 'exportTSV';
-        }
-        ImpersonatedUsers.insert({
-          adminId: adminId,
-          boardId: boardId,
-          reason: exportType,
-        });
-      }
-      
-      let userLanguage = 'en';
-      if (user && user.profile) {
-        userLanguage = user.profile.language
-      }
-      
+
+    // If board is public, skip expensive authentication operations
+    if (board.isPublic()) {
+      // Public boards don't require authentication - skip hash operations
+      const exporter = new Exporter(boardId);
+
       if( params.query.delimiter == "\t" ) {
         // TSV file
         res.writeHead(200, {
@@ -197,7 +237,73 @@ if (Meteor.isServer) {
         // use Uint8Array to prevent from converting bytes to string
         res.write(new Uint8Array([0xEF, 0xBB, 0xBF]));
       }
-      res.write(exporter.buildCsv(params.query.delimiter, userLanguage));
+      res.write(await exporter.buildCsv(params.query.delimiter, 'en'));
+      res.end();
+      return;
+    }
+
+    // Only perform expensive authentication for private boards
+    const loginToken = params.query.authToken;
+    if (loginToken) {
+      // Validate token length to prevent resource abuse
+      if (loginToken.length > 10000) {
+        if (process.env.DEBUG === 'true') {
+          console.warn('Suspiciously long auth token received, rejecting to prevent resource abuse');
+        }
+        res.writeHead(400);
+        res.end('Invalid token');
+        return;
+      }
+
+      const hashToken = Accounts._hashLoginToken(loginToken);
+      user = await ReactiveCache.getUser({
+        'services.resume.loginTokens.hashedToken': hashToken,
+      });
+      adminId = user._id.toString();
+      impersonateDone = await ReactiveCache.getImpersonatedUser({ adminId: adminId });
+    } else if (!Meteor.settings.public.sandstorm) {
+      Authentication.checkUserId(req.userId);
+      user = await ReactiveCache.getUser({
+        _id: req.userId,
+        isAdmin: true,
+      });
+    }
+
+    const exporter = new Exporter(boardId);
+    if (await exporter.canExport(user) || impersonateDone) {
+      if (impersonateDone) {
+        let exportType = 'exportCSV';
+        if( params.query.delimiter == "\t" ) {
+          exportType = 'exportTSV';
+        }
+        ImpersonatedUsers.insert({
+          adminId: adminId,
+          boardId: boardId,
+          reason: exportType,
+        });
+      }
+
+      let userLanguage = 'en';
+      if (user && user.profile) {
+        userLanguage = user.profile.language
+      }
+
+      if( params.query.delimiter == "\t" ) {
+        // TSV file
+        res.writeHead(200, {
+          'Content-Type': 'text/tsv',
+        });
+      }
+      else {
+        // CSV file (comma or semicolon)
+        res.writeHead(200, {
+          'Content-Type': 'text/csv; charset=utf-8',
+        });
+        // Adding UTF8 BOM to quick fix MS Excel issue
+        // use Uint8Array to prevent from converting bytes to string
+        res.write(new Uint8Array([0xEF, 0xBB, 0xBF]));
+      }
+      res.write(await exporter.buildCsv(params.query.delimiter, userLanguage));
       res.end();
     } else {
       res.writeHead(403);

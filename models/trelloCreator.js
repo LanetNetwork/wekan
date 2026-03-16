@@ -1,10 +1,32 @@
 import { ReactiveCache } from '/imports/reactiveCache';
-import moment from 'moment/min/moment-with-locales';
 import { TAPi18n } from '/imports/i18n';
+import { CustomFields } from './customFields';
+import {
+  formatDateTime,
+  formatDate,
+  formatTime,
+  getISOWeek,
+  isValidDate,
+  isBefore,
+  isAfter,
+  isSame,
+  add,
+  subtract,
+  startOf,
+  endOf,
+  format,
+  parseDate,
+  now,
+  createDate,
+  fromNow,
+  calendar
+} from '/imports/lib/dateUtils';
+import getSlug from 'limax';
+import { validateAttachmentUrl } from './lib/attachmentUrlValidation';
 
 const DateString = Match.Where(function(dateAsString) {
   check(dateAsString, String);
-  return moment(dateAsString, moment.ISO_8601).isValid();
+  return isValidDate(new Date(dateAsString));
 });
 
 export class TrelloCreator {
@@ -160,7 +182,7 @@ export class TrelloCreator {
   }
 
   // You must call parseActions before calling this one.
-  createBoardAndLabels(trelloBoard) {
+  async createBoardAndLabels(trelloBoard) {
     let color = 'blue';
     if (this.getColor(trelloBoard.prefs.background) !== undefined) {
       color = this.getColor(trelloBoard.prefs.background);
@@ -186,7 +208,7 @@ export class TrelloCreator {
       permission: this.getPermission(trelloBoard.prefs.permissionLevel),
       slug: getSlug(trelloBoard.name) || 'board',
       stars: 0,
-      title: Boards.uniqueTitle(trelloBoard.name),
+      title: await Boards.uniqueTitle(trelloBoard.name),
     };
     // now add other members
     if (trelloBoard.memberships) {
@@ -450,6 +472,17 @@ export class TrelloCreator {
             }
           };
           if (att.url) {
+            const validation = validateAttachmentUrl(att.url);
+            if (!validation.valid) {
+              if (process.env.DEBUG === 'true') {
+                console.warn(
+                  'Blocked attachment URL during Trello import:',
+                  validation.reason,
+                  att.url,
+                );
+              }
+              return;
+            }
             Attachments.load(att.url, opts, cb, true);
           } else if (att.file) {
             Attachments.insert(att.file, opts, cb, true);
@@ -747,18 +780,18 @@ export class TrelloCreator {
     }
   }
 
-  create(board, currentBoardId) {
+  async create(board, currentBoardId) {
     // TODO : Make isSandstorm variable global
     const isSandstorm =
       Meteor.settings &&
       Meteor.settings.public &&
       Meteor.settings.public.sandstorm;
     if (isSandstorm && currentBoardId) {
-      const currentBoard = ReactiveCache.getBoard(currentBoardId);
-      currentBoard.archive();
+      const currentBoard = await ReactiveCache.getBoard(currentBoardId);
+      await currentBoard.archive();
     }
     this.parseActions(board.actions);
-    const boardId = this.createBoardAndLabels(board);
+    const boardId = await this.createBoardAndLabels(board);
     this.createLists(board.lists, boardId);
     this.createSwimlanes(boardId);
     this.createCards(board.cards, boardId);

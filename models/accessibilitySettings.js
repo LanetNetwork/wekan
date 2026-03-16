@@ -47,14 +47,14 @@ AccessibilitySettings.attachSchema(
 
 AccessibilitySettings.allow({
   update(userId) {
-    const user = ReactiveCache.getUser(userId);
+    const user = Meteor.users.findOne(userId);
     return user && user.isAdmin;
   },
 });
 
 if (Meteor.isServer) {
-  Meteor.startup(() => {
-    AccessibilitySettings._collection.createIndex({ modifiedAt: -1 });
+  Meteor.startup(async () => {
+    await AccessibilitySettings._collection.createIndexAsync({ modifiedAt: -1 });
     const accessibilitySetting = AccessibilitySettings.findOne({});
     if (!accessibilitySetting) {
       AccessibilitySettings.insert({ enabled: false, sort: 0 });

@@ -5,8 +5,15 @@ import { isFileValid } from './fileValidation';
 import { createBucket } from './lib/grid/createBucket';
 import fs from 'fs';
 import path from 'path';
-import { AttachmentStoreStrategyFilesystem, AttachmentStoreStrategyGridFs, AttachmentStoreStrategyS3 } from '/models/lib/attachmentStoreStrategy';
-import FileStoreStrategyFactory, {moveToStorage, rename, STORAGE_NAME_FILESYSTEM, STORAGE_NAME_GRIDFS, STORAGE_NAME_S3} from '/models/lib/fileStoreStrategy';
+import { AttachmentStoreStrategyFilesystem, AttachmentStoreStrategyGridFs } from '/models/lib/attachmentStoreStrategy';
+// DISABLED: S3 storage strategy removed due to Node.js compatibility
+// import { AttachmentStoreStrategyS3 } from '/models/lib/attachmentStoreStrategy';
+import FileStoreStrategyFactory, {moveToStorage, rename, STORAGE_NAME_FILESYSTEM, STORAGE_NAME_GRIDFS} from '/models/lib/fileStoreStrategy';
+// DISABLED: S3 storage removed due to Node.js compatibility
+// import { STORAGE_NAME_S3 } from '/models/lib/fileStoreStrategy';
+import { getAttachmentWithBackwardCompatibility, getAttachmentsWithBackwardCompatibility } from './lib/attachmentBackwardCompatibility';
+import AttachmentStorageSettings from './attachmentStorageSettings';
+import { generateUniversalAttachmentUrl, cleanFileUrl } from '/models/lib/universalUrlGenerator';
 
 let attachmentUploadExternalProgram;
 let attachmentUploadMimeTypes = [];
@@ -38,7 +45,7 @@ if (Meteor.isServer) {
     }
   }
 
-  storagePath = path.join(process.env.WRITABLE_PATH, 'attachments');
+  storagePath = path.join(process.env.WRITABLE_PATH || process.cwd(), 'attachments');
 }
 
 export const fileStoreStrategyFactory = new FileStoreStrategyFactory(AttachmentStoreStrategyFilesystem, storagePath, AttachmentStoreStrategyGridFs, attachmentBucket);
@@ -90,8 +97,58 @@ Attachments = new FilesCollection({
     const ret = fileStoreStrategyFactory.storagePath;
     return ret;
   },
+  onBeforeUpload(file) {
+    // SECURITY: Sanitize filename to prevent path traversal attacks
+    // Import sanitizeFilename from fileStoreStrategy - but since we can't import here,
+    // we'll implement a minimal inline version to be safe
+    if (file.name && typeof file.name === 'string') {
+      // Use path.basename to strip directory components and prevent path traversal
+      let safeName = path.basename(file.name);
+      // Remove null bytes
+      safeName = safeName.replace(/\0/g, '');
+      // Remove path traversal sequences
+      safeName = safeName.replace(/\.\.[\\/\\]/g, '');
+      safeName = safeName.replace(/^\.\.$/g, '');
+      safeName = safeName.trim();
+
+      // If sanitization changed the name, update it
+      if (safeName && safeName !== '.' && safeName !== '..' && safeName !== file.name) {
+        file.name = safeName;
+      } else if (!safeName || safeName === '.' || safeName === '..') {
+        file.name = 'unnamed';
+      }
+    }
+
+    // Block SVG files for attachments to prevent XSS attacks
+    if (file.name && file.name.toLowerCase().endsWith('.svg')) {
+      if (process.env.DEBUG === 'true') {
+        console.warn('Blocked SVG file upload for attachment:', file.name);
+      }
+      return 'SVG files are not allowed for attachments due to security reasons. Please use PNG, JPG, GIF, or other safe formats.';
+    }
+
+    if (file.type === 'image/svg+xml') {
+      if (process.env.DEBUG === 'true') {
+        console.warn('Blocked SVG MIME type upload for attachment:', file.type);
+      }
+      return 'SVG files are not allowed for attachments due to security reasons. Please use PNG, JPG, GIF, or other safe formats.';
+    }
+
+    return true;
+  },
   onAfterUpload(fileObj) {
-    // current storage is the filesystem, update object and database
+    // Get default storage backend from settings
+    let defaultStorage = STORAGE_NAME_FILESYSTEM;
+    try {
+      const settings = AttachmentStorageSettings.findOne({});
+      if (settings) {
+        defaultStorage = settings.getDefaultStorage();
+      }
+    } catch (error) {
+      console.warn('Could not get attachment storage settings, using default:', error);
+    }
+
+    // Set initial storage to filesystem (temporary)
     Object.keys(fileObj.versions).forEach(versionName => {
       fileObj.versions[versionName].storage = STORAGE_NAME_FILESYSTEM;
     });
@@ -100,15 +157,26 @@ Attachments = new FilesCollection({
     Attachments.update({ _id: fileObj._id }, { $set: { "versions" : fileObj.versions } });
     Attachments.update({ _id: fileObj.uploadedAtOstrio }, { $set: { "uploadedAtOstrio" : this._now } });
 
-    let storageDestination = fileObj.meta.copyStorage || STORAGE_NAME_GRIDFS;
-    Meteor.defer(() => Meteor.call('validateAttachmentAndMoveToStorage', fileObj._id, storageDestination));
+    // Use selected storage backend or copy storage if specified
+    let storageDestination = fileObj.meta.copyStorage || defaultStorage;
+
+    // Only migrate if the destination is different from filesystem
+    if (storageDestination !== STORAGE_NAME_FILESYSTEM) {
+      Meteor.defer(() => Meteor.call('validateAttachmentAndMoveToStorage', fileObj._id, storageDestination));
+    }
   },
   interceptDownload(http, fileObj, versionName) {
     const ret = fileStoreStrategyFactory.getFileStrategy(fileObj, versionName).interceptDownload(http, this.cacheControl);
     return ret;
   },
-  onAfterRemove(files) {
+  onAfterRemove(filesInput) {
+    const files = normalizeRemovedFiles(filesInput);
+
     files.forEach(fileObj => {
+      if (!fileObj || !fileObj.versions) {
+        return;
+      }
+
       Object.keys(fileObj.versions).forEach(versionName => {
         fileStoreStrategyFactory.getFileStrategy(fileObj, versionName).onAfterRemove();
       });
@@ -117,13 +185,13 @@ Attachments = new FilesCollection({
   // We authorize the attachment download either:
   // - if the board is public, everyone (even unconnected) can download it
   // - if the board is private, only board members can download it
-  protected(fileObj) {
+  async protected(fileObj) {
     // file may have been deleted already again after upload validation failed
     if (!fileObj) {
       return false;
     }
 
-    const board = ReactiveCache.getBoard(fileObj.meta.boardId);
+    const board = await ReactiveCache.getBoard(fileObj.meta.boardId);
     if (board.isPublic()) {
       return true;
     }
@@ -132,65 +200,294 @@ Attachments = new FilesCollection({
   },
 });
 
+function normalizeRemovedFiles(filesInput) {
+  if (!filesInput) {
+    return [];
+  }
+
+  if (Array.isArray(filesInput)) {
+    return filesInput;
+  }
+
+  if (typeof filesInput.fetch === 'function') {
+    return filesInput.fetch();
+  }
+
+  if (Array.isArray(filesInput.files)) {
+    return filesInput.files;
+  }
+
+  if (typeof filesInput === 'string') {
+    return Attachments.find({ _id: filesInput }).fetch();
+  }
+
+  if (filesInput && typeof filesInput === 'object') {
+    if (filesInput._id && (filesInput.versions || filesInput.meta)) {
+      return [filesInput];
+    }
+
+    return Attachments.find(filesInput).fetch();
+  }
+
+  return [];
+}
+
 if (Meteor.isServer) {
   Attachments.allow({
     insert(userId, fileObj) {
-      return allowIsBoardMember(userId, ReactiveCache.getBoard(fileObj.boardId));
+      // ReadOnly users cannot upload attachments
+      return allowIsBoardMemberWithWriteAccess(userId, Boards.findOne(fileObj.boardId));
     },
-    update(userId, fileObj) {
-      return allowIsBoardMember(userId, ReactiveCache.getBoard(fileObj.boardId));
+    update(userId, fileObj, fields) {
+      // SECURITY: The 'name' field is sanitized in onBeforeUpload and server-side methods,
+      // but we block direct client-side $set operations on 'versions.*.path' to prevent
+      // path traversal attacks via storage migration exploits.
+
+      // Block direct updates to version paths (the attack vector)
+      const hasPathUpdate = fields.some(field => field.includes('versions') && field.includes('path'));
+      if (hasPathUpdate) {
+        if (process.env.DEBUG === 'true') {
+          console.warn('Blocked attempt to update attachment version paths:', fields);
+        }
+        return false;
+      }
+
+      // Allow normal updates for file upload/management
+      const allowedFields = ['name', 'size', 'type', 'extension', 'extensionWithDot', 'meta', 'versions'];
+      const isAllowedField = fields.every(field => {
+        // Allow field itself or nested properties like 'versions.original'
+        const baseField = field.split('.')[0];
+        return allowedFields.includes(baseField);
+      });
+
+      if (!isAllowedField) {
+        if (process.env.DEBUG === 'true') {
+          console.warn('Blocked attempt to update restricted attachment fields:', fields);
+        }
+        return false;
+      }
+
+      // ReadOnly users cannot update attachments
+      return allowIsBoardMemberWithWriteAccess(userId, Boards.findOne(fileObj.boardId));
     },
     remove(userId, fileObj) {
-      return allowIsBoardMember(userId, ReactiveCache.getBoard(fileObj.boardId));
+      // Additional security check: ensure the file belongs to the board the user has access to
+      if (!fileObj || !fileObj.boardId) {
+        if (process.env.DEBUG === 'true') {
+          console.warn('Blocked attachment removal: file has no boardId');
+        }
+        return false;
+      }
+
+      const board = Boards.findOne(fileObj.boardId);
+      if (!board) {
+        if (process.env.DEBUG === 'true') {
+          console.warn('Blocked attachment removal: board not found');
+        }
+        return false;
+      }
+
+      // ReadOnly users cannot delete attachments
+      return allowIsBoardMemberWithWriteAccess(userId, board);
     },
-    fetch: ['meta'],
+    fetch: ['meta', 'boardId'],
   });
 
   Meteor.methods({
-    moveAttachmentToStorage(fileObjId, storageDestination) {
+    // Validate image URL to prevent SVG-based DoS attacks
+    validateImageUrl(imageUrl) {
+      check(imageUrl, String);
+
+      if (!imageUrl) {
+        return { valid: false, reason: 'Empty URL' };
+      }
+
+      // Block SVG files and data URIs
+      if (imageUrl.endsWith('.svg') || imageUrl.startsWith('data:image/svg')) {
+        if (process.env.DEBUG === 'true') {
+          console.warn('Blocked potentially malicious SVG image URL:', imageUrl);
+        }
+        return { valid: false, reason: 'SVG images are blocked for security reasons' };
+      }
+
+      // Block data URIs that could contain malicious content
+      if (imageUrl.startsWith('data:')) {
+        if (process.env.DEBUG === 'true') {
+          console.warn('Blocked data URI image URL:', imageUrl);
+        }
+        return { valid: false, reason: 'Data URIs are blocked for security reasons' };
+      }
+
+      // Validate URL format
+      try {
+        const url = new URL(imageUrl);
+        // Only allow http and https protocols
+        if (!['http:', 'https:'].includes(url.protocol)) {
+          return { valid: false, reason: 'Only HTTP and HTTPS protocols are allowed' };
+        }
+      } catch (e) {
+        return { valid: false, reason: 'Invalid URL format' };
+      }
+
+      return { valid: true };
+    },
+    async moveAttachmentToStorage(fileObjId, storageDestination) {
       check(fileObjId, String);
       check(storageDestination, String);
 
-      const fileObj = ReactiveCache.getAttachment(fileObjId);
+      if (!this.userId) {
+        throw new Meteor.Error('not-authorized', 'You must be logged in.');
+      }
+
+      const fileObj = await ReactiveCache.getAttachment(fileObjId);
+      if (!fileObj) {
+        throw new Meteor.Error('attachment-not-found', 'Attachment not found');
+      }
+
+      const board = await ReactiveCache.getBoard(fileObj.boardId);
+      if (!board || !board.isVisibleBy({ _id: this.userId })) {
+        throw new Meteor.Error('not-authorized', 'You do not have access to this board.');
+      }
+
+      // Allowlist storage destinations
+      const allowedDestinations = ['fs', 'gridfs', 's3'];
+      if (!allowedDestinations.includes(storageDestination)) {
+        throw new Meteor.Error('invalid-storage-destination', 'Invalid storage destination');
+      }
+
       moveToStorage(fileObj, storageDestination, fileStoreStrategyFactory);
     },
-    renameAttachment(fileObjId, newName) {
+    async renameAttachment(fileObjId, newName) {
       check(fileObjId, String);
       check(newName, String);
 
-      const fileObj = ReactiveCache.getAttachment(fileObjId);
+      const currentUserId = Meteor.userId();
+      if (!currentUserId) {
+        throw new Meteor.Error('not-authorized', 'User must be logged in');
+      }
+
+      const fileObj = await ReactiveCache.getAttachment(fileObjId);
+      if (!fileObj) {
+        throw new Meteor.Error('file-not-found', 'Attachment not found');
+      }
+
+      // Verify the user has permission to modify this attachment
+      const board = await ReactiveCache.getBoard(fileObj.boardId);
+      if (!board) {
+        throw new Meteor.Error('board-not-found', 'Board not found');
+      }
+
+      if (!allowIsBoardMember(currentUserId, board)) {
+        if (process.env.DEBUG === 'true') {
+          console.warn(`Blocked unauthorized attachment rename attempt: user ${currentUserId} tried to rename attachment ${fileObjId} in board ${fileObj.boardId}`);
+        }
+        throw new Meteor.Error('not-authorized', 'You do not have permission to modify this attachment');
+      }
+
       rename(fileObj, newName, fileStoreStrategyFactory);
     },
-    validateAttachment(fileObjId) {
+    async validateAttachment(fileObjId) {
       check(fileObjId, String);
 
-      const fileObj = ReactiveCache.getAttachment(fileObjId);
-      const isValid = Promise.await(isFileValid(fileObj, attachmentUploadMimeTypes, attachmentUploadSize, attachmentUploadExternalProgram));
+      if (!this.userId) {
+        throw new Meteor.Error('not-authorized', 'You must be logged in.');
+      }
+
+      const fileObj = await ReactiveCache.getAttachment(fileObjId);
+      if (!fileObj) {
+        throw new Meteor.Error('attachment-not-found', 'Attachment not found');
+      }
+
+      const board = await ReactiveCache.getBoard(fileObj.boardId);
+      if (!board || !board.isVisibleBy({ _id: this.userId })) {
+        throw new Meteor.Error('not-authorized', 'You do not have access to this board.');
+      }
+
+      const isValid = await isFileValid(fileObj, attachmentUploadMimeTypes, attachmentUploadSize, attachmentUploadExternalProgram);
 
       if (!isValid) {
         Attachments.remove(fileObjId);
       }
     },
-    validateAttachmentAndMoveToStorage(fileObjId, storageDestination) {
+    async validateAttachmentAndMoveToStorage(fileObjId, storageDestination) {
       check(fileObjId, String);
       check(storageDestination, String);
 
-      Meteor.call('validateAttachment', fileObjId);
+      if (!this.userId) {
+        throw new Meteor.Error('not-authorized', 'You must be logged in.');
+      }
 
-      const fileObj = ReactiveCache.getAttachment(fileObjId);
+      const fileObj = await ReactiveCache.getAttachment(fileObjId);
+      if (!fileObj) {
+        throw new Meteor.Error('attachment-not-found', 'Attachment not found');
+      }
 
-      if (fileObj) {
+      const board = await ReactiveCache.getBoard(fileObj.boardId);
+      if (!board || !board.isVisibleBy({ _id: this.userId })) {
+        throw new Meteor.Error('not-authorized', 'You do not have access to this board.');
+      }
+
+      // Allowlist storage destinations
+      const allowedDestinations = ['fs', 'gridfs', 's3'];
+      if (!allowedDestinations.includes(storageDestination)) {
+        throw new Meteor.Error('invalid-storage-destination', 'Invalid storage destination');
+      }
+
+      await Meteor.callAsync('validateAttachment', fileObjId);
+
+      const fileObjAfter = await ReactiveCache.getAttachment(fileObjId);
+
+      if (fileObjAfter) {
         Meteor.defer(() => Meteor.call('moveAttachmentToStorage', fileObjId, storageDestination));
       }
     },
   });
 
-  Meteor.startup(() => {
-    Attachments.collection.createIndex({ 'meta.cardId': 1 });
+  Meteor.startup(async () => {
+    await Attachments.collection.createIndexAsync({ 'meta.cardId': 1 });
     const storagePath = fileStoreStrategyFactory.storagePath;
     if (!fs.existsSync(storagePath)) {
       console.log("create storagePath because it doesn't exist: " + storagePath);
       fs.mkdirSync(storagePath, { recursive: true });
+    }
+  });
+}
+
+// Add backward compatibility methods - available on both client and server
+Attachments.getAttachmentWithBackwardCompatibility = getAttachmentWithBackwardCompatibility;
+Attachments.getAttachmentsWithBackwardCompatibility = getAttachmentsWithBackwardCompatibility;
+
+// Override the link method to use universal URLs
+if (Meteor.isClient) {
+  // Override the original FilesCollection link method to use universal URLs
+  // This must override the ostrio:files method to avoid "Match error: Expected plain object"
+  const originalLink = Attachments.link;
+  Attachments.link = function(versionName) {
+    // Accept both direct calls and collection.helpers style calls
+    const fileRef = this._id ? this : (versionName && versionName._id ? versionName : this);
+    const version = (typeof versionName === 'string') ? versionName : 'original';
+
+    if (fileRef && fileRef._id) {
+      const url = generateUniversalAttachmentUrl(fileRef._id, version);
+      if (process.env.DEBUG === 'true') {
+        console.log('Attachment link generated:', url, 'for ID:', fileRef._id);
+      }
+      return url;
+    }
+    // Fallback to original if somehow we don't have an ID
+    return originalLink ? originalLink.call(this, versionName) : '';
+  };
+
+  // Also add as collection helper for document instances
+  Attachments.collection.helpers({
+    link(version) {
+      // Handle both no-argument and string argument cases
+      const ver = (typeof version === 'string') ? version : 'original';
+      const url = generateUniversalAttachmentUrl(this._id, ver);
+      if (process.env.DEBUG === 'true') {
+        console.log('Attachment link (helper) generated:', url, 'for ID:', this._id);
+      }
+      return url;
     }
   });
 }

@@ -1,9 +1,9 @@
-Meteor.publish('user-miniprofile', function (usernames) {
+Meteor.publish('user-miniprofile', async function (usernames) {
   check(usernames, Array);
 
   // eslint-disable-next-line no-console
   // console.log('usernames:', usernames);
-  const ret = ReactiveCache.getUsers(
+  const ret = await ReactiveCache.getUsers(
     {
       $or: [
         { username: { $in: usernames } },
@@ -33,9 +33,9 @@ Meteor.publish('user-admin', function () {
   return ret;
 });
 
-Meteor.publish('user-authenticationMethod', function (match) {
+Meteor.publish('user-authenticationMethod', async function (match) {
   check(match, String);
-  const ret = ReactiveCache.getUsers(
+  const ret = await ReactiveCache.getUsers(
     { $or: [{ _id: match }, { email: match }, { username: match }] },
     {
       fields: {
@@ -46,6 +46,49 @@ Meteor.publish('user-authenticationMethod', function (match) {
     },
     true,
   );
+  return ret;
+});
+
+// Secure user search publication for board sharing
+Meteor.publish('user-search', async function (searchTerm) {
+  check(searchTerm, String);
+
+  // Only allow logged-in users to search for other users
+  if (!this.userId) {
+    return this.ready();
+  }
+
+  // Create a regex for case-insensitive search
+  const searchRegex = new RegExp(searchTerm, 'i');
+
+  // Search for users by username, fullname, or email
+  const ret = await ReactiveCache.getUsers(
+    {
+      $or: [
+        { username: searchRegex },
+        { 'profile.fullname': searchRegex },
+        { 'emails.address': searchRegex }
+      ]
+    },
+    {
+      fields: {
+        _id: 1,
+        username: 1,
+        'profile.fullname': 1,
+        'profile.avatarUrl': 1,
+        'profile.initials': 1,
+        'emails.address': 1,
+        'emails.verified': 1,
+        authenticationMethod: 1,
+        isAdmin: 1,
+        loginDisabled: 1,
+        teams: 1,
+        orgs: 1,
+      },
+    },
+    true,
+  );
+
   return ret;
 });
 

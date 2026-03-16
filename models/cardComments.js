@@ -2,6 +2,13 @@ import { ReactiveCache } from '/imports/reactiveCache';
 import escapeForRegex from 'escape-string-regexp';
 import DOMPurify from 'dompurify';
 
+// Server-side text sanitization function
+function sanitizeText(text) {
+  if (typeof text !== 'string') return text;
+  // Strip HTML tags and return only text content
+  return text.replace(/<[^>]*>/g, '');
+}
+
 CardComments = new Mongo.Collection('card_comments');
 
 /**
@@ -75,13 +82,14 @@ CardComments.attachSchema(
 
 CardComments.allow({
   insert(userId, doc) {
-    return allowIsBoardMember(userId, ReactiveCache.getBoard(doc.boardId));
+    // ReadOnly users cannot add comments. Only members who can comment are allowed.
+    return allowIsBoardMemberCommentOnly(userId, Boards.findOne(doc.boardId));
   },
   update(userId, doc) {
-    return userId === doc.userId || allowIsBoardAdmin(userId, ReactiveCache.getBoard(doc.boardId));
+    return userId === doc.userId || allowIsBoardAdmin(userId, Boards.findOne(doc.boardId));
   },
   remove(userId, doc) {
-    return userId === doc.userId || allowIsBoardAdmin(userId, ReactiveCache.getBoard(doc.boardId));
+    return userId === doc.userId || allowIsBoardAdmin(userId, Boards.findOne(doc.boardId));
   },
   fetch: ['userId', 'boardId'],
 });
@@ -103,7 +111,7 @@ CardComments.helpers({
   },
 
   toggleReaction(reactionCodepoint) {
-    if (reactionCodepoint !== DOMPurify.sanitize(reactionCodepoint)) {
+    if (reactionCodepoint !== sanitizeText(reactionCodepoint)) {
       return false;
     } else {
 
@@ -146,8 +154,8 @@ CardComments.helpers({
 
 CardComments.hookOptions.after.update = { fetchPrevious: false };
 
-function commentCreation(userId, doc) {
-  const card = ReactiveCache.getCard(doc.cardId);
+async function commentCreation(userId, doc) {
+  const card = await ReactiveCache.getCard(doc.cardId);
   Activities.insert({
     userId,
     activityType: 'addComment',
@@ -159,9 +167,9 @@ function commentCreation(userId, doc) {
   });
 }
 
-CardComments.textSearch = (userId, textArray) => {
+CardComments.textSearch = async (userId, textArray) => {
   const selector = {
-    boardId: { $in: Boards.userBoardIds(userId) },
+    boardId: { $in: await Boards.userBoardIds(userId) },
     $and: [],
   };
 
@@ -172,7 +180,7 @@ CardComments.textSearch = (userId, textArray) => {
   // eslint-disable-next-line no-console
   // console.log('cardComments selector:', selector);
 
-  const comments = ReactiveCache.getCardComments(selector);
+  const comments = await ReactiveCache.getCardComments(selector);
   // eslint-disable-next-line no-console
   // console.log('count:', comments.count());
   // eslint-disable-next-line no-console
@@ -184,17 +192,17 @@ CardComments.textSearch = (userId, textArray) => {
 if (Meteor.isServer) {
   // Comments are often fetched within a card, so we create an index to make these
   // queries more efficient.
-  Meteor.startup(() => {
-    CardComments._collection.createIndex({ modifiedAt: -1 });
-    CardComments._collection.createIndex({ cardId: 1, createdAt: -1 });
+  Meteor.startup(async () => {
+    await CardComments._collection.createIndexAsync({ modifiedAt: -1 });
+    await CardComments._collection.createIndexAsync({ cardId: 1, createdAt: -1 });
   });
 
-  CardComments.after.insert((userId, doc) => {
-    commentCreation(userId, doc);
+  CardComments.after.insert(async (userId, doc) => {
+    await commentCreation(userId, doc);
   });
 
-  CardComments.after.update((userId, doc) => {
-    const card = ReactiveCache.getCard(doc.cardId);
+  CardComments.after.update(async (userId, doc) => {
+    const card = await ReactiveCache.getCard(doc.cardId);
     Activities.insert({
       userId,
       activityType: 'editComment',
@@ -206,8 +214,8 @@ if (Meteor.isServer) {
     });
   });
 
-  CardComments.before.remove((userId, doc) => {
-    const card = ReactiveCache.getCard(doc.cardId);
+  CardComments.before.remove(async (userId, doc) => {
+    const card = await ReactiveCache.getCard(doc.cardId);
     Activities.insert({
       userId,
       activityType: 'deleteComment',
@@ -217,7 +225,7 @@ if (Meteor.isServer) {
       listId: card.listId,
       swimlaneId: card.swimlaneId,
     });
-    const activity = ReactiveCache.getActivity({ commentId: doc._id });
+    const activity = await ReactiveCache.getActivity({ commentId: doc._id });
     if (activity) {
       Activities.remove(activity._id);
     }
@@ -236,7 +244,7 @@ if (Meteor.isServer) {
    *                comment: string,
    *                authorId: string}]
    */
-  JsonRoutes.add('GET', '/api/boards/:boardId/cards/:cardId/comments', function (
+  JsonRoutes.add('GET', '/api/boards/:boardId/cards/:cardId/comments', async function (
     req,
     res,
   ) {
@@ -246,10 +254,10 @@ if (Meteor.isServer) {
       Authentication.checkBoardAccess(req.userId, paramBoardId);
       JsonRoutes.sendResult(res, {
         code: 200,
-        data: ReactiveCache.getCardComments({
+        data: (await ReactiveCache.getCardComments({
           boardId: paramBoardId,
           cardId: paramCardId,
-        }).map(function (doc) {
+        })).map(function (doc) {
           return {
             _id: doc._id,
             comment: doc.text,
@@ -277,7 +285,7 @@ if (Meteor.isServer) {
   JsonRoutes.add(
     'GET',
     '/api/boards/:boardId/cards/:cardId/comments/:commentId',
-    function (req, res) {
+    async function (req, res) {
       try {
         const paramBoardId = req.params.boardId;
         const paramCommentId = req.params.commentId;
@@ -285,7 +293,7 @@ if (Meteor.isServer) {
         Authentication.checkBoardAccess(req.userId, paramBoardId);
         JsonRoutes.sendResult(res, {
           code: 200,
-          data: ReactiveCache.getCardComment({
+          data: await ReactiveCache.getCardComment({
             _id: paramCommentId,
             cardId: paramCardId,
             boardId: paramBoardId,
@@ -306,20 +314,19 @@ if (Meteor.isServer) {
    *
    * @param {string} boardId the board ID of the card
    * @param {string} cardId the ID of the card
-   * @param {string} authorId the user who 'posted' the comment
-   * @param {string} text the content of the comment
+   * @param {string} comment the content of the comment
    * @return_type {_id: string}
    */
   JsonRoutes.add(
     'POST',
     '/api/boards/:boardId/cards/:cardId/comments',
-    function (req, res) {
+    async function (req, res) {
       try {
         const paramBoardId = req.params.boardId;
         const paramCardId = req.params.cardId;
         Authentication.checkBoardAccess(req.userId, paramBoardId);
         const id = CardComments.direct.insert({
-          userId: req.body.authorId,
+          userId: req.userId,
           text: req.body.comment,
           cardId: paramCardId,
           boardId: paramBoardId,
@@ -332,12 +339,12 @@ if (Meteor.isServer) {
           },
         });
 
-        const cardComment = ReactiveCache.getCardComment({
+        const cardComment = await ReactiveCache.getCardComment({
           _id: id,
           cardId: paramCardId,
           boardId: paramBoardId,
         });
-        commentCreation(req.body.authorId, cardComment);
+        await commentCreation(req.userId, cardComment);
       } catch (error) {
         JsonRoutes.sendResult(res, {
           code: 200,

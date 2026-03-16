@@ -2,10 +2,26 @@ import Boards from '/models/boards';
 import Actions from '/models/actions';
 import Triggers from '/models/triggers';
 import Rules from '/models/rules';
+import { ReactiveCache } from '/imports/reactiveCache';
 
-Meteor.publish('rules', ruleId => {
+Meteor.publish('rules', async function(ruleId) {
   check(ruleId, String);
-  const ret = ReactiveCache.getRules(
+
+  if (!this.userId) {
+    return this.ready();
+  }
+
+  const rule = await ReactiveCache.getRule(ruleId);
+  if (!rule) {
+    return this.ready();
+  }
+
+  const board = await ReactiveCache.getBoard(rule.boardId);
+  if (!board || !board.isVisibleBy(this.userId)) {
+    return this.ready();
+  }
+
+  const ret = await ReactiveCache.getRules(
     {
       _id: ruleId,
     },
@@ -15,23 +31,39 @@ Meteor.publish('rules', ruleId => {
   return ret;
 });
 
-Meteor.publish('allRules', () => {
-  const ret = ReactiveCache.getRules({}, {}, true);
+Meteor.publish('allRules', async function() {
+  if (!this.userId || !(await ReactiveCache.getUser(this.userId)).isAdmin) {
+    return this.ready();
+  }
+
+  const ret = await ReactiveCache.getRules({}, {}, true);
   return ret;
 });
 
-Meteor.publish('allTriggers', () => {
-  const ret = ReactiveCache.getTriggers({}, {}, true);
+Meteor.publish('allTriggers', async function() {
+  if (!this.userId || !(await ReactiveCache.getUser(this.userId)).isAdmin) {
+    return this.ready();
+  }
+
+  const ret = await ReactiveCache.getTriggers({}, {}, true);
   return ret;
 });
 
-Meteor.publish('allActions', () => {
-  const ret = ReactiveCache.getActions({}, {}, true);
+Meteor.publish('allActions', async function() {
+  if (!this.userId || !(await ReactiveCache.getUser(this.userId)).isAdmin) {
+    return this.ready();
+  }
+
+  const ret = await ReactiveCache.getActions({}, {}, true);
   return ret;
 });
 
-Meteor.publish('rulesReport', () => {
-  const rules = ReactiveCache.getRules({}, {}, true);
+Meteor.publish('rulesReport', async function() {
+  if (!this.userId || !(await ReactiveCache.getUser(this.userId)).isAdmin) {
+    return this.ready();
+  }
+
+  const rules = await ReactiveCache.getRules({}, {}, true);
   const actionIds = [];
   const triggerIds = [];
   const boardIds = [];
@@ -44,9 +76,9 @@ Meteor.publish('rulesReport', () => {
 
   const ret = [
     rules,
-    ReactiveCache.getActions({ _id: { $in: actionIds } }, {}, true),
-    ReactiveCache.getTriggers({ _id: { $in: triggerIds } }, {}, true),
-    ReactiveCache.getBoards({ _id: { $in: boardIds } }, { fields: { title: 1 } }, true),
+    await ReactiveCache.getActions({ _id: { $in: actionIds } }, {}, true),
+    await ReactiveCache.getTriggers({ _id: { $in: triggerIds } }, {}, true),
+    await ReactiveCache.getBoards({ _id: { $in: boardIds } }, { fields: { title: 1 } }, true),
   ];
   return ret;
 });

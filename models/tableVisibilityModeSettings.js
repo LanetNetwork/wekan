@@ -46,14 +46,14 @@ TableVisibilityModeSettings.attachSchema(
 
 TableVisibilityModeSettings.allow({
   update(userId) {
-    const user = ReactiveCache.getUser(userId);
+    const user = Meteor.users.findOne(userId);
     return user && user.isAdmin;
   },
 });
 
 if (Meteor.isServer) {
-  Meteor.startup(() => {
-    TableVisibilityModeSettings._collection.createIndex({ modifiedAt: -1 });
+  Meteor.startup(async () => {
+    await TableVisibilityModeSettings._collection.createIndexAsync({ modifiedAt: -1 });
     TableVisibilityModeSettings.upsert(
       { _id: 'tableVisibilityMode-allowPrivateOnly' },
       {

@@ -1,3 +1,5 @@
+import { incrementCounter } from './counters';
+
 OrgUser = new Mongo.Collection('orgUser');
 
 /**
@@ -14,7 +16,7 @@ OrgUser.attachSchema(
       // eslint-disable-next-line consistent-return
       autoValue() {
         if (this.isInsert && !this.isSet) {
-          return incrementCounter('counters', 'orgUserId', 1);
+          return incrementCounter('orgUserId', 1);
         }
       },
     },
@@ -73,9 +75,9 @@ OrgUser.attachSchema(
 
 if (Meteor.isServer) {
   // Index for Organization User.
-  Meteor.startup(() => {
-    OrgUser._collection.createIndex({ orgId: -1 });
-    OrgUser._collection.createIndex({ orgId: -1, userId: -1 });
+  Meteor.startup(async () => {
+    await OrgUser._collection.createIndexAsync({ orgId: -1 });
+    await OrgUser._collection.createIndexAsync({ orgId: -1, userId: -1 });
   });
 }
 

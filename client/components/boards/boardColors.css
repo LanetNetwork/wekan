@@ -1,4 +1,4 @@
-/* =============== 
+/* ===============
 THEME - NEPHRITIS
 =================*/
 
@@ -48,6 +48,12 @@ THEME - NEPHRITIS
 .board-color-nephritis .materialCheckBox.is-checked {
   border-bottom: 2px solid #27ae60;
   border-right: 2px solid #27ae60;
+}
+.board-color-nephritis .checklist-progress-bar {
+  background-color: #d4f1dd !important;
+}
+.board-color-nephritis .checklist-progress-bar .checklist-progress {
+  background-color: #27ae60 !important;
 }
 .board-color-nephritis .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #e7faef;
@@ -99,7 +105,7 @@ THEME - NEPHRITIS
 
 /* === END NEPHRITIS THEME === */
 
-/* =============== 
+/* ===============
 THEME - Pomegranate
 =================*/
 
@@ -149,6 +155,12 @@ THEME - Pomegranate
 .board-color-pomegranate .materialCheckBox.is-checked {
   border-bottom: 2px solid #c0392b;
   border-right: 2px solid #c0392b;
+}
+.board-color-pomegranate .checklist-progress-bar {
+  background-color: #f5d5d2 !important;
+}
+.board-color-pomegranate .checklist-progress-bar .checklist-progress {
+  background-color: #c0392b !important;
 }
 .board-color-pomegranate .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #faeae9;
@@ -200,7 +212,7 @@ THEME - Pomegranate
 
 /* === END Pomegranate THEME === */
 
-/* =============== 
+/* ===============
 THEME - Belize
 =================*/
 
@@ -250,6 +262,12 @@ THEME - Belize
 .board-color-belize .materialCheckBox.is-checked {
   border-bottom: 2px solid #2980b9;
   border-right: 2px solid #2980b9;
+}
+.board-color-belize .checklist-progress-bar {
+  background-color: #d1e7f5 !important;
+}
+.board-color-belize .checklist-progress-bar .checklist-progress {
+  background-color: #2980b9 !important;
 }
 .board-color-belize .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #e8f3fa;
@@ -301,7 +319,7 @@ THEME - Belize
 
 /* === END Belize THEME === */
 
-/* =============== 
+/* ===============
 THEME - Wisteria
 =================*/
 
@@ -351,6 +369,12 @@ THEME - Wisteria
 .board-color-wisteria .materialCheckBox.is-checked {
   border-bottom: 2px solid #8e44ad;
   border-right: 2px solid #8e44ad;
+}
+.board-color-wisteria .checklist-progress-bar {
+  background-color: #e8d9f0 !important;
+}
+.board-color-wisteria .checklist-progress-bar .checklist-progress {
+  background-color: #8e44ad !important;
 }
 .board-color-wisteria .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #f4ecf7;
@@ -402,7 +426,7 @@ THEME - Wisteria
 
 /* === END Wisteria THEME === */
 
-/* =============== 
+/* ===============
 THEME - Midnight
 =================*/
 
@@ -452,6 +476,12 @@ THEME - Midnight
 .board-color-midnight .materialCheckBox.is-checked {
   border-bottom: 2px solid #2c3e50;
   border-right: 2px solid #2c3e50;
+}
+.board-color-midnight .checklist-progress-bar {
+  background-color: #d2dae2 !important;
+}
+.board-color-midnight .checklist-progress-bar .checklist-progress {
+  background-color: #2c3e50 !important;
 }
 .board-color-midnight .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #e6ecf1;
@@ -503,7 +533,7 @@ THEME - Midnight
 
 /* === END Midnight THEME === */
 
-/* =============== 
+/* ===============
 THEME - Pumpkin
 =================*/
 
@@ -553,6 +583,12 @@ THEME - Pumpkin
 .board-color-pumpkin .materialCheckBox.is-checked {
   border-bottom: 2px solid #e67e22;
   border-right: 2px solid #e67e22;
+}
+.board-color-pumpkin .checklist-progress-bar {
+  background-color: #f9e5d1 !important;
+}
+.board-color-pumpkin .checklist-progress-bar .checklist-progress {
+  background-color: #e67e22 !important;
 }
 .board-color-pumpkin .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #fdf2e9;
@@ -604,7 +640,7 @@ THEME - Pumpkin
 
 /* === END Pumpkin THEME === */
 
-/* =============== 
+/* ===============
 THEME - Moderate Pink
 =================*/
 
@@ -654,6 +690,12 @@ THEME - Moderate Pink
 .board-color-moderatepink .materialCheckBox.is-checked {
   border-bottom: 2px solid #cd5a91;
   border-right: 2px solid #cd5a91;
+}
+.board-color-moderatepink .checklist-progress-bar {
+  background-color: #f4dde8 !important;
+}
+.board-color-moderatepink .checklist-progress-bar .checklist-progress {
+  background-color: #cd5a91 !important;
 }
 .board-color-moderatepink .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #faeef4;
@@ -705,7 +747,7 @@ THEME - Moderate Pink
 
 /* === END Moderatepink THEME === */
 
-/* =============== 
+/* ===============
 THEME - Strong Cyan
 =================*/
 
@@ -755,6 +797,12 @@ THEME - Strong Cyan
 .board-color-strongcyan .materialCheckBox.is-checked {
   border-bottom: 2px solid #00aecc;
   border-right: 2px solid #00aecc;
+}
+.board-color-strongcyan .checklist-progress-bar {
+  background-color: #ccf2f9 !important;
+}
+.board-color-strongcyan .checklist-progress-bar .checklist-progress {
+  background-color: #00aecc !important;
 }
 .board-color-strongcyan .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #e0fbff;
@@ -806,7 +854,7 @@ THEME - Strong Cyan
 
 /* === END Strongcyan THEME === */
 
-/* =============== 
+/* ===============
 THEME - Lime Green
 =================*/
 
@@ -856,6 +904,12 @@ THEME - Lime Green
 .board-color-limegreen .materialCheckBox.is-checked {
   border-bottom: 2px solid #4bbf6b;
   border-right: 2px solid #4bbf6b;
+}
+.board-color-limegreen .checklist-progress-bar {
+  background-color: #daf4de !important;
+}
+.board-color-limegreen .checklist-progress-bar .checklist-progress {
+  background-color: #4bbf6b !important;
 }
 .board-color-limegreen .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #edf9f0;
@@ -907,7 +961,7 @@ THEME - Lime Green
 
 /* === END Limegreen THEME === */
 
-/* =============== 
+/* ===============
 THEME - Dark
 =================*/
 
@@ -958,6 +1012,12 @@ THEME - Dark
 .board-color-dark .materialCheckBox.is-checked {
   border-bottom: 2px solid #2c3e51;
   border-right: 2px solid #2c3e51;
+}
+.board-color-dark .checklist-progress-bar {
+  background-color: #d2dae2 !important;
+}
+.board-color-dark .checklist-progress-bar .checklist-progress {
+  background-color: #2c3e51 !important;
 }
 .board-color-dark .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #e6ecf1;
@@ -1111,7 +1171,7 @@ THEME - Dark
 
 /* === END Dark THEME === */
 
-/* =============== 
+/* ===============
 THEME - Relax
 =================*/
 
@@ -1161,6 +1221,12 @@ THEME - Relax
 .board-color-relax .materialCheckBox.is-checked {
   border-bottom: 2px solid #27ae61;
   border-right: 2px solid #27ae61;
+}
+.board-color-relax .checklist-progress-bar {
+  background-color: #d4f1dd !important;
+}
+.board-color-relax .checklist-progress-bar .checklist-progress {
+  background-color: #27ae61 !important;
 }
 .board-color-relax .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #e7faef;
@@ -1241,7 +1307,7 @@ THEME - Relax
 
 /* === END Relax THEME === */
 
-/* =============== 
+/* ===============
 THEME - Corteza
 =================*/
 
@@ -1291,6 +1357,12 @@ THEME - Corteza
 .board-color-corteza .materialCheckBox.is-checked {
   border-bottom: 2px solid #568ba2;
   border-right: 2px solid #568ba2;
+}
+.board-color-corteza .checklist-progress-bar {
+  background-color: #dce6ec !important;
+}
+.board-color-corteza .checklist-progress-bar .checklist-progress {
+  background-color: #568ba2 !important;
 }
 .board-color-corteza .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #eef3f6;
@@ -1342,7 +1414,7 @@ THEME - Corteza
 
 /* === END Corteza THEME === */
 
-/* =============== 
+/* ===============
 THEME - Clear Blue
 =================*/
 
@@ -1397,6 +1469,12 @@ THEME - Clear Blue
   border-bottom: 2px solid #499bea;
   border-right: 2px solid #499bea;
 }
+.board-color-clearblue .checklist-progress-bar {
+  background-color: #daeefb !important;
+}
+.board-color-clearblue .checklist-progress-bar .checklist-progress {
+  background-color: #499bea !important;
+}
 .board-color-clearblue .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #e0fbff;
 }
@@ -1425,7 +1503,7 @@ THEME - Clear Blue
 }
 .board-color-clearblue .list {
   background: rgba(255,255,255,0.35);
-  margin: 10px;
+  margin: 10px 0;
   border: 0;
   border-radius: 14px;
 }
@@ -1609,7 +1687,7 @@ THEME - Clear Blue
 
 /* === END Clearblue THEME === */
 
-/* =============== 
+/* ===============
 THEME - Natural
 =================*/
 
@@ -1659,6 +1737,12 @@ THEME - Natural
 .board-color-natural .materialCheckBox.is-checked {
   border-bottom: 2px solid #596557;
   border-right: 2px solid #596557;
+}
+.board-color-natural .checklist-progress-bar {
+  background-color: #dee0dd !important;
+}
+.board-color-natural .checklist-progress-bar .checklist-progress {
+  background-color: #596557 !important;
 }
 .board-color-natural .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #eef0ee;
@@ -1719,7 +1803,7 @@ THEME - Natural
 
 /* === END Natural THEME === */
 
-/* =============== 
+/* ===============
 THEME - Modern
 =================*/
 
@@ -1769,6 +1853,12 @@ THEME - Modern
 .board-color-modern .materialCheckBox.is-checked {
   border-bottom: 2px solid #2a80b8;
   border-right: 2px solid #2a80b8;
+}
+.board-color-modern .checklist-progress-bar {
+  background-color: #d1e7f5 !important;
+}
+.board-color-modern .checklist-progress-bar .checklist-progress {
+  background-color: #2a80b8 !important;
 }
 .board-color-modern .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #e8f3fa;
@@ -2006,7 +2096,7 @@ THEME - Modern
 
 /* === END Modern THEME === */
 
-/* =============== 
+/* ===============
 THEME - Modern Dark
 =================*/
 
@@ -2061,6 +2151,12 @@ THEME - Modern Dark
 .board-color-moderndark .materialCheckBox.is-checked {
   border-bottom: 2px solid #2a2a2a;
   border-right: 2px solid #2a2a2a;
+}
+.board-color-moderndark .checklist-progress-bar {
+  background-color: #d1d1d1 !important;
+}
+.board-color-moderndark .checklist-progress-bar .checklist-progress {
+  background-color: #2a2a2a !important;
 }
 .board-color-moderndark .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #eaeaea;
@@ -2496,7 +2592,7 @@ THEME - Modern Dark
 /* === END ModernDark THEME === */
 
 
-/* =============== 
+/* ===============
 THEME - Exodark
 =================*/
 
@@ -2547,6 +2643,12 @@ THEME - Exodark
   border-bottom: 2px solid #dbdbdb!important;/*Fix contrast of checkbox*/
   border-right: 2px solid #dbdbdb!important;
 }
+.board-color-exodark .checklist-progress-bar {
+  background-color: #cccccc !important;
+}
+.board-color-exodark .checklist-progress-bar .checklist-progress {
+  background-color: #222 !important;
+}
 .board-color-exodark .is-multiselection-active .multi-selection-checkbox.is-checked + .minicard {
   background: #e9e9e9;
 }
@@ -2588,7 +2690,7 @@ THEME - Exodark
   background: #222;
 }
 .board-color-exodark .list {
-  margin: 10px;
+  margin: 10px 0;
   color: #fff;
   border-radius: 15px;
   background-color: #1c1c1c;
@@ -2744,7 +2846,7 @@ THEME - Exodark
 
 /* === END Exodark THEME === */
 
-/* =============== 
+/* ===============
 THEME - Clean Dark
 =================*/
 
@@ -2811,6 +2913,7 @@ THEME - Clean Dark
 
 .board-color-cleandark .card-details {
   background: #23232B;
+  scrollbar-color: #ffffff #2e2e39;
   border-radius: 20px;
   box-shadow: none;
 }
@@ -3139,6 +3242,12 @@ THEME - Clean Dark
   margin-left: 3px;
   margin-top: 3px;
 }
+.board-color-cleandark .checklist-progress-bar {
+  background-color: #6b6b78 !important;
+}
+.board-color-cleandark .checklist-progress-bar .checklist-progress {
+  background-color: #23232B !important;
+}
 
 .board-color-cleandark .allBoards {
   white-space: nowrap;
@@ -3182,7 +3291,7 @@ THEME - Clean Dark
 .board-color-cleandark.background-box {
   background-color:#23232B;
 } /*Fixes contrast issues with background box in theme selection list*/
-/* =============== 
+/* ===============
 THEME - Clean Light
 =================*/
 /* Please note Clean Light theme elements also contain references to some cleandark theme elements so if unable to find code you're looking for under CleanDark it might be here. This should probably be cleaned up*/
@@ -3321,7 +3430,13 @@ THEME - Clean Light
 
 .board-color-cleanlight .list .list-header .list-header-menu .js-collapse,
 .board-color-cleandark .list .list-header .list-header-menu .js-collapse {
-  display: none;
+  /* Make collapse button visible in Clean Light / Clean Dark themes.
+     Previously this was hidden which caused the missing Collapse button
+     when using these themes. Use inline-block so it lines up with other
+     header controls. */
+  display: inline-block;
+  vertical-align: middle;
+  color: inherit;
 }
 
 .board-color-cleanlight .list-header-add,
@@ -3492,7 +3607,7 @@ THEME - Clean Light
 
 .board-color-cleandark .card-details-header {
   background: #2E2E39 !important;
-  color: rgba(255, 255, 255, 1);
+  color: #FFF !important;
 }
 
 .board-color-cleanlight .card-details-header .card-details-title,
@@ -3884,6 +3999,13 @@ THEME - Clean Light
   background: none;
   margin-left: 3px;
   margin-top: 3px;
+}
+.board-color-cleanlight .checklist-progress-bar {
+  background-color: #f5f5f5 !important;
+}
+.board-color-cleanlight .checklist-progress-bar .checklist-progress {
+  background-color: #c0c0c0 !important;
+  color: #010101 !important;
 }
 
 .board-color-cleanlight .allBoards {

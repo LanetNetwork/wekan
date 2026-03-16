@@ -37,10 +37,12 @@ textarea.js-edit-checklist-item {
 .checklist-progress-bar-container .checklist-progress-bar {
   width: 80%;
   height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 16px;
 }
 .checklist-progress-bar-container .checklist-progress-bar .checklist-progress {
-  color: #fff !important;
-  background-color: #2196f3 !important;
+  color: #fff;
+  background-color: #666;
   padding: 0.01em 16px;
   border-radius: 16px;
   height: 100%;

@@ -8,6 +8,7 @@ import { TAPi18n } from '/imports/i18n';
 import fs from 'fs';
 import path from 'path';
 import FileStoreStrategyFactory, { FileStoreStrategyFilesystem, FileStoreStrategyGridFs, STORAGE_NAME_FILESYSTEM } from '/models/lib/fileStoreStrategy';
+import { generateUniversalAvatarUrl, cleanFileUrl } from '/models/lib/universalUrlGenerator';
 
 const filesize = require('filesize');
 
@@ -40,10 +41,10 @@ if (Meteor.isServer) {
   }
 
   avatarsBucket = createBucket('avatars');
-  storagePath = path.join(process.env.WRITABLE_PATH, 'avatars');
+  storagePath = path.join(process.env.WRITABLE_PATH || process.cwd(), 'avatars');
 }
 
-const fileStoreStrategyFactory = new FileStoreStrategyFactory(FileStoreStrategyFilesystem, storagePath, FileStoreStrategyGridFs, avatarsBucket);
+export const fileStoreStrategyFactory = new FileStoreStrategyFactory(FileStoreStrategyFilesystem, storagePath, FileStoreStrategyGridFs, avatarsBucket);
 
 Avatars = new FilesCollection({
   debug: false, // Change to `true` for debugging
@@ -85,12 +86,27 @@ Avatars = new FilesCollection({
     return ret;
   },
   onBeforeUpload(file) {
+    // Block SVG files for avatars to prevent XSS attacks
+    if (file.name && file.name.toLowerCase().endsWith('.svg')) {
+      if (process.env.DEBUG === 'true') {
+        console.warn('Blocked SVG file upload for avatar:', file.name);
+      }
+      return 'SVG files are not allowed for avatars due to security reasons. Please use PNG, JPG, or GIF format.';
+    }
+
+    if (file.type === 'image/svg+xml') {
+      if (process.env.DEBUG === 'true') {
+        console.warn('Blocked SVG MIME type upload for avatar:', file.type);
+      }
+      return 'SVG files are not allowed for avatars due to security reasons. Please use PNG, JPG, or GIF format.';
+    }
+
     if (file.size <= avatarsUploadSize && file.type.startsWith('image/')) {
       return true;
     }
     return TAPi18n.__('avatar-too-big', {size: filesize(avatarsUploadSize)});
   },
-  onAfterUpload(fileObj) {
+  async onAfterUpload(fileObj) {
     // current storage is the filesystem, update object and database
     Object.keys(fileObj.versions).forEach(versionName => {
       fileObj.versions[versionName].storage = STORAGE_NAME_FILESYSTEM;
@@ -98,10 +114,13 @@ Avatars = new FilesCollection({
 
     Avatars.update({ _id: fileObj._id }, { $set: { "versions": fileObj.versions } });
 
-    const isValid = Promise.await(isFileValid(fileObj, avatarsUploadMimeTypes, avatarsUploadSize, avatarsUploadExternalProgram));
+    const isValid = await isFileValid(fileObj, avatarsUploadMimeTypes, avatarsUploadSize, avatarsUploadExternalProgram);
 
     if (isValid) {
-      ReactiveCache.getUser(fileObj.userId).setAvatarUrl(`${formatFleURL(fileObj)}?auth=false&brokenIsFine=true`);
+      // Set avatar URL using universal URL generator (URL-agnostic)
+      const universalUrl = generateUniversalAvatarUrl(fileObj._id);
+      const user = await ReactiveCache.getUser(fileObj.userId);
+      user.setAvatarUrl(universalUrl);
     } else {
       Avatars.remove(fileObj._id);
     }
@@ -110,23 +129,64 @@ Avatars = new FilesCollection({
     const ret = fileStoreStrategyFactory.getFileStrategy(fileObj, versionName).interceptDownload(http, this.cacheControl);
     return ret;
   },
-  onBeforeRemove(files) {
-    files.forEach(fileObj => {
-      if (fileObj.userId) {
-        ReactiveCache.getUser(fileObj.userId).setAvatarUrl('');
+  async onBeforeRemove(filesInput) {
+    const files = normalizeRemovedFiles(filesInput);
+
+    for (const fileObj of files) {
+      if (fileObj && fileObj.userId) {
+        const user = await ReactiveCache.getUser(fileObj.userId);
+        user.setAvatarUrl('');
       }
-    });
+    }
 
     return true;
   },
-  onAfterRemove(files) {
+  onAfterRemove(filesInput) {
+    const files = normalizeRemovedFiles(filesInput);
+
     files.forEach(fileObj => {
+      if (!fileObj || !fileObj.versions) {
+        return;
+      }
+
       Object.keys(fileObj.versions).forEach(versionName => {
         fileStoreStrategyFactory.getFileStrategy(fileObj, versionName).onAfterRemove();
       });
     });
   },
 });
+
+function normalizeRemovedFiles(filesInput) {
+  if (!filesInput) {
+    return [];
+  }
+
+  if (Array.isArray(filesInput)) {
+    return filesInput;
+  }
+
+  if (typeof filesInput.fetch === 'function') {
+    return filesInput.fetch();
+  }
+
+  if (Array.isArray(filesInput.files)) {
+    return filesInput.files;
+  }
+
+  if (typeof filesInput === 'string') {
+    return Avatars.find({ _id: filesInput }).fetch();
+  }
+
+  if (filesInput && typeof filesInput === 'object') {
+    if (filesInput._id && (filesInput.versions || filesInput.userId)) {
+      return [filesInput];
+    }
+
+    return Avatars.find(filesInput).fetch();
+  }
+
+  return [];
+}
 
 function isOwner(userId, doc) {
   return userId && userId === doc.userId;
@@ -145,6 +205,17 @@ if (Meteor.isServer) {
     if (!fs.existsSync(storagePath)) {
       console.log("create storagePath because it doesn't exist: " + storagePath);
       fs.mkdirSync(storagePath, { recursive: true });
+    }
+  });
+}
+
+// Override the link method to use universal URLs
+if (Meteor.isClient) {
+  // Add custom link method to avatar documents
+  Avatars.collection.helpers({
+    link(version = 'original') {
+      // Use universal URL generator for consistent, URL-agnostic URLs
+      return generateUniversalAvatarUrl(this._id, version);
     }
   });
 }

@@ -1,11 +1,13 @@
 import { ReactiveCache } from '/imports/reactiveCache';
+import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
-BlazeComponent.extendComponent({
-  addSubtask(event) {
+Template.subtasks.events({
+  'click .js-open-subtask-details-menu': Popup.open('subtaskActions'),
+  'submit .js-add-subtask'(event, tpl) {
     event.preventDefault();
-    const textarea = this.find('textarea.js-add-subtask-item');
+    const textarea = tpl.find('textarea.js-add-subtask-item');
     const title = textarea.value.trim();
-    const cardId = this.currentData().cardId;
+    const cardId = Template.currentData().cardId;
     const card = ReactiveCache.getCard(cardId);
     const sortIndex = -1;
     const crtBoard = ReactiveCache.getBoard(card.boardId);
@@ -52,7 +54,7 @@ BlazeComponent.extendComponent({
       Filter.addException(_id);
 
       setTimeout(() => {
-        this.$('.add-subtask-item')
+        tpl.$('.add-subtask-item')
           .last()
           .click();
       }, 100);
@@ -60,27 +62,20 @@ BlazeComponent.extendComponent({
     textarea.value = '';
     textarea.focus();
   },
-
-  deleteSubtask() {
-    const subtask = this.currentData().subtask;
-    if (subtask && subtask._id) {
-      subtask.archive();
-    }
-  },
-
-  isBoardAdmin() {
-    return ReactiveCache.getCurrentUser().isBoardAdmin();
-  },
-
-  editSubtask(event) {
+  'submit .js-edit-subtask-title'(event, tpl) {
     event.preventDefault();
-    const textarea = this.find('textarea.js-edit-subtask-item');
+    const textarea = tpl.find('textarea.js-edit-subtask-item');
     const title = textarea.value.trim();
-    const subtask = this.currentData().subtask;
+    const subtask = Template.currentData().subtask;
     subtask.setTitle(title);
   },
-
-  pressKey(event) {
+  async 'click .js-delete-subtask-item'() {
+    const subtask = Template.currentData().subtask;
+    if (subtask && subtask._id) {
+      await subtask.archive();
+    }
+  },
+  keydown(event) {
     //If user press enter key inside a form, submit it
     //Unless the user is also holding down the 'shift' key
     if (event.keyCode === 13 && !event.shiftKey) {
@@ -89,53 +84,58 @@ BlazeComponent.extendComponent({
       $form.find('button[type=submit]').click();
     }
   },
+});
 
-  events() {
-    return [
-      {
-        'click .js-open-subtask-details-menu': Popup.open('subtaskActions'),
-        'submit .js-add-subtask': this.addSubtask,
-        'submit .js-edit-subtask-title': this.editSubtask,
-        'click .js-delete-subtask-item': this.deleteSubtask,
-        keydown: this.pressKey,
-      },
-    ];
-  },
-}).register('subtasks');
+Template.subtasks.onCreated(function () {
+  this.toggleDeleteDialog = new ReactiveVar(false);
+});
 
-BlazeComponent.extendComponent({
-  // ...
-}).register('subtaskItemDetail');
-
-BlazeComponent.extendComponent({
+Template.subtasks.helpers({
   isBoardAdmin() {
     return ReactiveCache.getCurrentUser().isBoardAdmin();
   },
-  events() {
-    return [
-      {
-        'click .js-view-subtask'(event) {
-          if ($(event.target).hasClass('js-view-subtask')) {
-            const subtask = this.currentData().subtask;
-            const board = subtask.board();
-            FlowRouter.go('card', {
-              boardId: board._id,
-              slug: board.slug,
-              cardId: subtask._id,
-            });
-          }
-        },
-        'click .js-delete-subtask' : Popup.afterConfirm('subtaskDelete', function () {
-          Popup.back(2);
-          const subtask = this.subtask;
-          if (subtask && subtask._id) {
-            subtask.archive();
-          }
-        }),
-      }
-    ]
-  }
-}).register('subtaskActionsPopup');
+  toggleDeleteDialog() {
+    return Template.instance().toggleDeleteDialog;
+  },
+});
+
+Template.subtaskItemDetail.events({
+  async 'click .js-subtasks-item .check-box-unicode'() {
+    const item = Template.currentData().item;
+    if (item && item._id) {
+      await item.toggleItem();
+    }
+  },
+});
+
+Template.subtaskActionsPopup.helpers({
+  isBoardAdmin() {
+    return ReactiveCache.getCurrentUser().isBoardAdmin();
+  },
+});
+
+Template.subtaskActionsPopup.events({
+  'click .js-view-subtask'(event) {
+    if ($(event.target).hasClass('js-view-subtask')) {
+      const subtask = Template.currentData().subtask;
+      const board = subtask.board();
+      FlowRouter.go('card', {
+        boardId: board._id,
+        slug: board.slug,
+        cardId: subtask._id,
+        swimlaneId: subtask.swimlaneId,
+        listId: subtask.listId,
+      });
+    }
+  },
+  'click .js-delete-subtask' : Popup.afterConfirm('subtaskDelete', async function () {
+    Popup.back(2);
+    const subtask = this.subtask;
+    if (subtask && subtask._id) {
+      await subtask.archive();
+    }
+  }),
+});
 
 Template.editSubtaskItemForm.helpers({
   user() {
@@ -145,5 +145,3 @@ Template.editSubtaskItemForm.helpers({
     return ReactiveCache.getCurrentUser().isBoardAdmin();
   },
 });
-
-

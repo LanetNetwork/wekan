@@ -50,13 +50,10 @@ Rules.attachSchema(
   }),
 );
 
-Rules.mutations({
-  rename(description) {
-    return { $set: { description } };
-  },
-});
-
 Rules.helpers({
+  async rename(description) {
+    return await Rules.updateAsync(this._id, { $set: { description } });
+  },
   getAction() {
     return ReactiveCache.getAction(this.actionId);
   },
@@ -76,19 +73,19 @@ Rules.helpers({
 
 Rules.allow({
   insert(userId, doc) {
-    return allowIsBoardAdmin(userId, ReactiveCache.getBoard(doc.boardId));
+    return allowIsBoardAdmin(userId, Boards.findOne(doc.boardId));
   },
   update(userId, doc) {
-    return allowIsBoardAdmin(userId, ReactiveCache.getBoard(doc.boardId));
+    return allowIsBoardAdmin(userId, Boards.findOne(doc.boardId));
   },
   remove(userId, doc) {
-    return allowIsBoardAdmin(userId, ReactiveCache.getBoard(doc.boardId));
+    return allowIsBoardAdmin(userId, Boards.findOne(doc.boardId));
   },
 });
 
 if (Meteor.isServer) {
-  Meteor.startup(() => {
-    Rules._collection.createIndex({ modifiedAt: -1 });
+  Meteor.startup(async () => {
+    await Rules._collection.createIndexAsync({ modifiedAt: -1 });
   });
 }
 

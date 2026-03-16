@@ -25,13 +25,14 @@ template(name="comment")
           = text
         .edit-controls
           button.primary(type="submit") {{_ 'edit'}}
-          .fa.fa-times-thin.js-close-inlined-form
+          a.js-close-inlined-form(title="{{_ 'close' }}")
+            i.fa.fa-times-thin
       else
         .comment-text
           +viewer
             = text
         +commentReactions(reactions=reactions commentId=_id)
-        span(title=createdAt).comment-meta {{ moment createdAt }}
+        span(title=createdAt).comment-meta {{ displayDate createdAt }}
           if($eq currentUser._id userId)
             +editOrDeleteComment
           else if currentUser.isBoardAdmin
@@ -54,9 +55,11 @@ template(name="commentReactions")
         span.reaction-codepoint !{reaction.reactionCodepoint}
         span.reaction-count #{reaction.userIds.length}
     if (currentUser.isBoardMember)
-      a.open-comment-reaction-popup(title="{{_ 'addReactionPopup-title'}}")
-        i.fa.fa-smile-o
-        i.fa.fa-plus
+      unless currentUser.isReadOnly
+        unless currentUser.isReadAssignedOnly
+          a.open-comment-reaction-popup(title="{{_ 'addReactionPopup-title'}}")
+            span(title="{{_ 'reaction' }}") 😀
+            span(title="{{_ 'add' }}") ➕
 
 template(name="addReactionPopup")
   .reactions-popup

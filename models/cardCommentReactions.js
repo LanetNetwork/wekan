@@ -51,20 +51,20 @@ CardCommentReactions.attachSchema(
 
 CardCommentReactions.allow({
   insert(userId, doc) {
-    return allowIsBoardMember(userId, ReactiveCache.getBoard(doc.boardId));
+    return allowIsBoardMember(userId, Boards.findOne(doc.boardId));
   },
   update(userId, doc) {
-    return allowIsBoardMember(userId, ReactiveCache.getBoard(doc.boardId));
+    return allowIsBoardMember(userId, Boards.findOne(doc.boardId));
   },
   remove(userId, doc) {
-    return allowIsBoardMember(userId, ReactiveCache.getBoard(doc.boardId));
+    return allowIsBoardMember(userId, Boards.findOne(doc.boardId));
   },
   fetch: ['boardId'],
 });
 
 
 if (Meteor.isServer) {
-  Meteor.startup(() => {
-    CardCommentReactions._collection.createIndex({ cardCommentId: 1 }, { unique: true });
+  Meteor.startup(async () => {
+    await CardCommentReactions._collection.createIndexAsync({ cardCommentId: 1 }, { unique: true });
   });
 }

@@ -9,6 +9,19 @@
       #-----------------------------------------------------------------
       # MongoDB database URL required
       export MONGO_URL=mongodb://127.0.0.1:27017/wekan
+      # MONGO_PASSWORD_FILE : MongoDB password file (Docker secrets)
+      # example : export MONGO_PASSWORD_FILE=/run/secrets/mongo_password
+      #export MONGO_PASSWORD_FILE=
+      #-----------------------------------------------------------------
+      # MONGO_OPLOG_URL: MongoDB oplog connection (highly recommended for pub/sub performance)
+      # Required for Meteor reactive subscriptions to work efficiently
+      # Must point to a MongoDB replica set (local oplog or remote)
+      # For local MongoDB with replicaSet named 'rs0', use:
+      #   export MONGO_OPLOG_URL=mongodb://127.0.0.1:27017/local?replicaSet=rs0
+      # For production with credentials and remote MongoDB:
+      #   export MONGO_OPLOG_URL=mongodb://<user>:<password>@<host>:<port>/local?authSource=admin&replicaSet=rsWekan
+      # Without this, Meteor falls back to polling which increases CPU usage and latency
+      #export MONGO_OPLOG_URL=mongodb://127.0.0.1:27017/local?replicaSet=rs0
       #-----------------------------------------------------------------
       # If port is 80, must change ROOT_URL to: http://YOUR-WEKAN-SERVER-IPv4-ADDRESS , like http://192.168.0.100
       # If port is not 80, must change ROOT_URL to: http://YOUR-WEKAN-SERVER-IPv4-ADDRESS:YOUR-PORT-NUMBER , like http://192.168.0.100:2000
@@ -37,6 +50,9 @@
       #   ap-southeast-1,ap-northeast-1,sa-east-1
       #
       #export S3='{"s3":{"key": "xxx", "secret": "xxx", "bucket": "xxx", "region": "xxx"}}'
+      # S3_SECRET_FILE : S3 secret file (Docker secrets)
+      # example : export S3_SECRET_FILE=/run/secrets/s3_secret
+      #export S3_SECRET_FILE=
       #-----------------------------------------------------------------
       # https://github.com/wekan/wekan/wiki/Troubleshooting-Mail
       # https://github.com/wekan/wekan-mongodb/blob/master/docker-compose.yml
@@ -46,6 +62,9 @@
       #export MAIL_SERVICE=Outlook365
       #export MAIL_SERVICE_USER=firstname.lastname@hotmail.com
       #export MAIL_SERVICE_PASSWORD=SecretPassword
+      # MAIL_SERVICE_PASSWORD_FILE : Password file for mail service (Docker secrets)
+      # example : export MAIL_SERVICE_PASSWORD_FILE=/run/secrets/mail_service_password
+      #export MAIL_SERVICE_PASSWORD_FILE=
       #---------------------------------------------
       #export KADIRA_OPTIONS_ENDPOINT=http://127.0.0.1:11011
       #---------------------------------------------
@@ -207,6 +226,9 @@
       #
       # Secret key generated during app registration:
       #export OAUTH2_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      # OAUTH2_SECRET_FILE : Secret key file for OAuth2 (Docker secrets)
+      # example : export OAUTH2_SECRET_FILE=/run/secrets/oauth2_secret
+      #export OAUTH2_SECRET_FILE=
       #export OAUTH2_SERVER_URL=https://login.microsoftonline.com/
       #export OAUTH2_AUTH_ENDPOINT=/oauth2/v2.0/authorize
       #export OAUTH2_USERINFO_ENDPOINT=https://graph.microsoft.com/oidc/userinfo
@@ -375,6 +397,9 @@
       # LDAP_AUTHENTIFICATION_PASSWORD : The password for the search user
       # example : AUTHENTIFICATION_PASSWORD=admin
       #export LDAP_AUTHENTIFICATION_PASSWORD=
+      # LDAP_AUTHENTIFICATION_PASSWORD_FILE : The password file for the search user (Docker secrets)
+      # example : export LDAP_AUTHENTIFICATION_PASSWORD_FILE=/run/secrets/ldap_auth_password
+      #export LDAP_AUTHENTIFICATION_PASSWORD_FILE=
       #
       # LDAP_LOG_ENABLED : Enable logs for the module
       # example :  export LDAP_LOG_ENABLED=true

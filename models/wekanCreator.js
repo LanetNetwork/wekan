@@ -1,9 +1,31 @@
 import { ReactiveCache } from '/imports/reactiveCache';
-import moment from 'moment/min/moment-with-locales';
+import { CustomFields } from './customFields';
+import {
+  formatDateTime,
+  formatDate,
+  formatTime,
+  getISOWeek,
+  isValidDate,
+  isBefore,
+  isAfter,
+  isSame,
+  add,
+  subtract,
+  startOf,
+  endOf,
+  format,
+  parseDate,
+  now,
+  createDate,
+  fromNow,
+  calendar
+} from '/imports/lib/dateUtils';
+import getSlug from 'limax';
+import { validateAttachmentUrl } from './lib/attachmentUrlValidation';
 
 const DateString = Match.Where(function(dateAsString) {
   check(dateAsString, String);
-  return moment(dateAsString, moment.ISO_8601).isValid();
+  return isValidDate(new Date(dateAsString));
 });
 
 export class WekanCreator {
@@ -57,6 +79,33 @@ export class WekanCreator {
 
     // maps a wekanCardId to an array of wekanAttachments
     this.attachments = {};
+
+    // default swimlane id created during import if necessary
+    this._defaultSwimlaneId = null;
+
+    // Normalize possible exported id fields: some exports may use `id` instead of `_id`.
+    // Ensure every item we rely on has an `_id` so mappings work consistently.
+    const normalizeIds = arr => {
+      if (!arr) return;
+      arr.forEach(item => {
+        if (item && item.id && !item._id) {
+          item._id = item.id;
+        }
+      });
+    };
+
+    normalizeIds(data.lists);
+    normalizeIds(data.cards);
+    normalizeIds(data.swimlanes);
+    normalizeIds(data.checklists);
+    normalizeIds(data.checklistItems);
+    normalizeIds(data.triggers);
+    normalizeIds(data.actions);
+    normalizeIds(data.labels);
+    normalizeIds(data.customFields);
+    normalizeIds(data.comments);
+    normalizeIds(data.activities);
+    normalizeIds(data.rules);
   }
 
   /**
@@ -196,14 +245,14 @@ export class WekanCreator {
     ]);
   }
 
-  getMembersToMap(data) {
+  async getMembersToMap(data) {
     // we will work on the list itself (an ordered array of objects) when a
     // mapping is done, we add a 'wekan' field to the object representing the
     // imported member
     const membersToMap = data.members;
     const users = data.users;
     // auto-map based on username
-    membersToMap.forEach(importedMember => {
+    for (const importedMember of membersToMap) {
       importedMember.id = importedMember.userId;
       delete importedMember.userId;
       const user = users.filter(user => {
@@ -213,11 +262,11 @@ export class WekanCreator {
         importedMember.fullName = user.profile.fullname;
       }
       importedMember.username = user.username;
-      const wekanUser = ReactiveCache.getUser({ username: importedMember.username });
+      const wekanUser = await ReactiveCache.getUser({ username: importedMember.username });
       if (wekanUser) {
         importedMember.wekanId = wekanUser._id;
       }
-    });
+    }
     return membersToMap;
   }
 
@@ -232,7 +281,7 @@ export class WekanCreator {
   }
 
   // You must call parseActions before calling this one.
-  createBoardAndLabels(boardToImport) {
+  async createBoardAndLabels(boardToImport) {
     const boardToCreate = {
       archived: boardToImport.archived,
       color: boardToImport.color,
@@ -256,7 +305,7 @@ export class WekanCreator {
       permission: boardToImport.permission,
       slug: getSlug(boardToImport.title) || 'board',
       stars: 0,
-      title: Boards.uniqueTitle(boardToImport.title),
+      title: await Boards.uniqueTitle(boardToImport.title),
     };
     // now add other members
     if (boardToImport.members) {
@@ -329,7 +378,7 @@ export class WekanCreator {
         dateLastActivity: this._now(),
         description: card.description,
         listId: this.lists[card.listId],
-        swimlaneId: this.swimlanes[card.swimlaneId],
+        swimlaneId: this.swimlanes[card.swimlaneId] || this._defaultSwimlaneId,
         sort: card.sort,
         title: card.title,
         // we attribute the card to its creator if available
@@ -471,6 +520,17 @@ export class WekanCreator {
             }
           };
           if (att.url) {
+            const validation = validateAttachmentUrl(att.url);
+            if (!validation.valid) {
+              if (process.env.DEBUG === 'true') {
+                console.warn(
+                  'Blocked attachment URL during Wekan import:',
+                  validation.reason,
+                  att.url,
+                );
+              }
+              return;
+            }
             Attachments.load(att.url, opts, cb, true);
           } else if (att.file) {
             Attachments.insert(att.file, opts, cb, true);
@@ -569,6 +629,25 @@ export class WekanCreator {
   }
 
   createSwimlanes(wekanSwimlanes, boardId) {
+    // If no swimlanes provided, create a default so cards still render
+    if (!wekanSwimlanes || wekanSwimlanes.length === 0) {
+      const swimlaneToCreate = {
+        archived: false,
+        boardId,
+        createdAt: this._now(),
+        title: 'Default',
+        sort: 0,
+      };
+      const created = Swimlanes.direct.insert(swimlaneToCreate);
+      Swimlanes.direct.update(created, {
+        $set: {
+          updatedAt: this._now(),
+        },
+      });
+      this._defaultSwimlaneId = created;
+      return;
+    }
+
     wekanSwimlanes.forEach((swimlane, swimlaneIndex) => {
       const swimlaneToCreate = {
         archived: swimlane.archived,
@@ -592,11 +671,14 @@ export class WekanCreator {
         },
       });
       this.swimlanes[swimlane._id] = swimlaneId;
+      if (!this._defaultSwimlaneId) {
+        this._defaultSwimlaneId = swimlaneId;
+      }
     });
   }
 
-  createSubtasks(wekanCards) {
-    wekanCards.forEach(card => {
+  async createSubtasks(wekanCards) {
+    for (const card of wekanCards) {
       // get new id of card (in created / new board)
       const cardIdInNewBoard = this.cards[card._id];
 
@@ -613,7 +695,7 @@ export class WekanCreator {
         : card.parentId;
 
       //if the parent card exists, proceed
-      if (ReactiveCache.getCard(parentIdInNewBoard)) {
+      if (await ReactiveCache.getCard(parentIdInNewBoard)) {
         //set parent id of the card in the new board to the new id of the parent
         Cards.direct.update(cardIdInNewBoard, {
           $set: {
@@ -621,7 +703,7 @@ export class WekanCreator {
           },
         });
       }
-    });
+    }
   }
 
   createChecklists(wekanChecklists) {
@@ -901,23 +983,23 @@ export class WekanCreator {
     // }
   }
 
-  create(board, currentBoardId) {
+  async create(board, currentBoardId) {
     // TODO : Make isSandstorm variable global
     const isSandstorm =
       Meteor.settings &&
       Meteor.settings.public &&
       Meteor.settings.public.sandstorm;
     if (isSandstorm && currentBoardId) {
-      const currentBoard = ReactiveCache.getBoard(currentBoardId);
-      currentBoard.archive();
+      const currentBoard = await ReactiveCache.getBoard(currentBoardId);
+      await currentBoard.archive();
     }
     this.parseActivities(board);
-    const boardId = this.createBoardAndLabels(board);
+    const boardId = await this.createBoardAndLabels(board);
     this.createLists(board.lists, boardId);
     this.createSwimlanes(board.swimlanes, boardId);
     this.createCustomFields(board.customFields, boardId);
     this.createCards(board.cards, boardId);
-    this.createSubtasks(board.cards);
+    await this.createSubtasks(board.cards);
     this.createChecklists(board.checklists);
     this.createChecklistItems(board.checklistItems);
     this.importActivities(board.activities, boardId);
