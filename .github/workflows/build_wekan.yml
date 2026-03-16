@@ -6,7 +6,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            /*
+            !/docker-compose.yml
       - name: Prepare to build
-        run: sed -i 's/#build:/build:/; s/#  context:/  context:/; s/#  dockerfile:/  dockerfile:/' docker-compose.yml
+        run: mv docker-compose-dev.yml docker-compose.yml
       - name: Run docker compose build
         run: sudo docker compose up -d --build
