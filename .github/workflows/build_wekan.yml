@@ -5,7 +5,7 @@ jobs:
     runs-on: github-dev
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare to build
         run: sed -i 's/#build:/build:/; s/#  context:/  context:/; s/#  dockerfile:/  dockerfile:/' docker-compose.yml
       - name: Run docker compose build
